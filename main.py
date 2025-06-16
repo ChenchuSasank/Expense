@@ -1256,8 +1256,8 @@ class ExpenseTrackerApp:
         self.top_frame = tk.Frame(self.root, bg="lightgray")
         self.top_frame.pack(side=tk.TOP, fill=tk.X)
         buttons = [("Record Data", self.show_add_record_form),
-                    ("Show Data", self.show_records_table),
-                    ("Modify Data", self.show_modify_page)]
+                   ("Show Data", self.show_records_table),
+                   ("Modify Data", self.show_modify_page)]
         for name, command in buttons:
             tk.Button(self.top_frame, text=name, command=command, font=("Arial", 14), height=2,
                       bd=0, bg="white", activebackground="white").pack(side=tk.LEFT, expand=True, fill=tk.X, padx=2, pady=5)
@@ -1309,6 +1309,36 @@ class ExpenseTrackerApp:
 
     def show_home_page(self):
         self.clear_main_area()
+
+        # "No Data" heading
+        no_data_label = tk.Label(
+            self.main_area,
+            text="No Data",
+            font=("Arial", 24, "bold"),
+            fg="gray",
+            bg="lightgray"
+        )
+        no_data_label.pack(pady=(50, 20)) # Top padding and some bottom padding
+
+        # Expense matter text
+        expense_matter_text = (
+            "This space is currently empty because there's no expense data "
+            "recorded for display. To start tracking your expenses, click the "
+            "'+' button in the bottom-right corner to add your first record.\n\n"
+            "Once you start adding records, you'll see summaries, charts, "
+            "or recent transactions here, giving you a quick overview of your finances."
+        )
+        expense_matter_label = tk.Label(
+            self.main_area,
+            text=expense_matter_text,
+            font=("Arial", 16),
+            fg="darkgray", # Lighter color to make it look like a background hint
+            bg="lightgray",
+            wraplength=700, # Wrap text within this width
+            justify=tk.CENTER # Center align the text
+        )
+        expense_matter_label.pack(expand=True, fill=tk.BOTH, padx=50, pady=20) # Use expand and fill to take available space
+
         # Create a frame to hold the plus button for easier positioning
         plus_button_frame = tk.Frame(self.main_area, bg="lightgray")
         plus_button_frame.pack(side=tk.BOTTOM, anchor=tk.SE, padx=20, pady=20) # Anchor to South East
@@ -1328,10 +1358,12 @@ class ExpenseTrackerApp:
 
     def show_dashboard(self):
         self.clear_main_area()
-        tk.Label(self.main_area, text="Expense/Income Dashboard", font=('Arial', 20), bg="lightgray").pack(pady=10)
+        tk.Label(self.main_area, text="Dashboard", font=('Arial', 20), bg="lightgray").pack(pady=10)
 
         filter_options_frame = tk.Frame(self.main_area, bg="lightgray")
         filter_options_frame.pack(pady=10)
+        # Give a unique name to the filter_options_frame
+        filter_options_frame.winfo_name = 'filter_options_frame'
 
         self.chart_type_var = tk.StringVar(value="Expense")
         type_options = ttk.Combobox(filter_options_frame, textvariable=self.chart_type_var,
@@ -1341,9 +1373,9 @@ class ExpenseTrackerApp:
         type_options.bind("<<ComboboxSelected>>", lambda e: self.display_pie_chart())
 
         self.selected_date = DateEntry(filter_options_frame, date_pattern='yyyy-mm-dd',
-                                       font=("Arial", 13), background='darkblue',
-                                       foreground='white', borderwidth=2, width=15,
-                                       maxdate=datetime.today().date())
+                                         font=("Arial", 13), background='darkblue',
+                                         foreground='white', borderwidth=2, width=15,
+                                         maxdate=datetime.today().date())
         self.selected_date.pack(side=tk.LEFT, padx=5)
         self.selected_date.bind("<<DateEntrySelected>>", lambda e: self.display_pie_chart())
 
@@ -1351,20 +1383,14 @@ class ExpenseTrackerApp:
 
     def display_pie_chart(self):
         # Clear previous chart elements, but keep the filter options frame
+        # We need to explicitly check for the filter_options_frame by its name or reference
         for widget in self.main_area.winfo_children():
-            # Keep the first child (the title) and the second child (filter_options_frame)
-            # This logic needs to be careful if you re-arrange widgets.
-            # A safer approach is to destroy all widgets except the filter_options_frame itself.
-            if widget not in (self.main_area.winfo_children()[0], self.main_area.winfo_children()[1]):
-                 if isinstance(widget, (tk.Label, tk.Frame)): # Ensure not to destroy persistent widgets if any
-                     if widget.winfo_name() != 'filter_options_frame': # Give a unique name to filter frame
-                        widget.destroy()
-                 else:
-                     widget.destroy() # Destroy matplotlib canvas and other dynamic widgets
+            # Check if the widget is not the filter_options_frame or the title label
+            # Assuming the title label is always the first child, and filter_options_frame is the second
+            # A more robust way would be to keep references to these specific widgets
+            if widget != self.main_area.winfo_children()[0] and widget.winfo_name != 'filter_options_frame':
+                widget.destroy()
 
-        # Re-check for the filter frame, if it was already destroyed (e.g., if there's a different title)
-        # This part ensures that if display_pie_chart is called directly, it doesn't break
-        # However, the current flow calls this from show_dashboard, where the frame is guaranteed to exist.
 
         fig, ax = plt.subplots(figsize=(6, 4), facecolor='lightgray')
         data_group = defaultdict(float)
@@ -1438,15 +1464,15 @@ class ExpenseTrackerApp:
         tk.Label(form_frame, text="Category:", **label_opts).grid(row=1, column=0, sticky="e", padx=20, pady=10)
         self.category_var = tk.StringVar()
         category_combo = ttk.Combobox(form_frame, textvariable=self.category_var,
-                                       values=["Income", "Expense"], state="readonly",
-                                       font=('Arial', 13), width=38)
+                                     values=["Income", "Expense"], state="readonly",
+                                     font=('Arial', 13), width=38)
         category_combo.grid(row=1, column=1, sticky="w", pady=10)
         category_combo.bind("<<ComboboxSelected>>", self.update_subcategories)
 
         tk.Label(form_frame, text="Sub-Category:", **label_opts).grid(row=2, column=0, sticky="e", padx=20, pady=10)
         self.subcategory_var = tk.StringVar()
         self.subcategory_combo = ttk.Combobox(form_frame, textvariable=self.subcategory_var,
-                                               state="readonly", font=('Arial', 13), width=38)
+                                             state="readonly", font=('Arial', 13), width=38)
         self.subcategory_combo.grid(row=2, column=1, sticky="w", pady=10)
 
         tk.Label(form_frame, text="Amount:", **label_opts).grid(row=3, column=0, sticky="e", padx=20, pady=10)
@@ -1550,25 +1576,25 @@ class ExpenseTrackerApp:
         tk.Label(filter_frame, text="Sub-Category:", font=('Arial', 11), bg="lightgray").grid(row=0, column=2, padx=5)
         self.filter_subcategory_var = tk.StringVar(value="")
         self.filter_subcategory_combo = ttk.Combobox(filter_frame, textvariable=self.filter_subcategory_var,
-                                                       values=[""], state="readonly", # Initial empty
-                                                       font=('Arial', 11), width=15)
+                                                      values=[""], state="readonly", # Initial empty
+                                                      font=('Arial', 11), width=15)
         self.filter_subcategory_combo.grid(row=0, column=3, padx=5)
 
         # From Date Filter
         tk.Label(filter_frame, text="From Date:", font=('Arial', 11), bg="lightgray").grid(row=1, column=0, padx=5, pady=5)
         self.filter_from_date = DateEntry(filter_frame, date_pattern='yyyy-mm-dd',
-                                           font=("Arial", 11), background='darkblue',
-                                           foreground='white', borderwidth=2, width=15,
-                                           maxdate=datetime.today().date())
+                                             font=("Arial", 11), background='darkblue',
+                                             foreground='white', borderwidth=2, width=15,
+                                             maxdate=datetime.today().date())
         self.filter_from_date.delete(0, tk.END) # Clear default date
         self.filter_from_date.grid(row=1, column=1, padx=5, pady=5)
 
         # To Date Filter
         tk.Label(filter_frame, text="To Date:", font=('Arial', 11), bg="lightgray").grid(row=1, column=2, padx=5, pady=5)
         self.filter_to_date = DateEntry(filter_frame, date_pattern='yyyy-mm-dd',
-                                         font=("Arial", 11), background='darkblue',
-                                         foreground='white', borderwidth=2, width=15,
-                                         maxdate=datetime.today().date())
+                                          font=("Arial", 11), background='darkblue',
+                                          foreground='white', borderwidth=2, width=15,
+                                          maxdate=datetime.today().date())
         self.filter_to_date.delete(0, tk.END) # Clear default date
         self.filter_to_date.grid(row=1, column=3, padx=5, pady=5)
 
@@ -1672,6 +1698,10 @@ class ExpenseTrackerApp:
 
         # Insert filtered records
         for index, record in enumerate(records_to_display):
+            # Store the original record's index or a unique identifier if filtering is complex.
+            # For this simplified app, we're relying on the fact that `records_to_display` are
+            # actual record objects from `self.records`.
+            # If you were to copy records, you'd need a way to map back.
             self.tree.insert('', tk.END, iid=index, values=[record[field] for field in FIELDS])
 
 
@@ -1680,14 +1710,6 @@ class ExpenseTrackerApp:
         if selected:
             # Need to find the original index in self.records, not just the filtered view's index
             # This is crucial for editing/deleting the correct record.
-            # A simple approach is to store the original index in the treeview itself.
-            # Let's update `populate_records_treeview` to store original index.
-            # For now, let's assume the order in filtered_records matches original for this simple demo,
-            # but for a robust app, you'd store the actual data object or original index.
-            # For this modification, let's just make sure we are not relying on `iid=index` directly.
-            # Instead, we will store the record's original data or a unique ID.
-            # For simplicity for this example, we'll retrieve values and find the match.
-            # In a real app, you might map Treeview iids to original record indices.
             selected_item_values = self.tree.item(selected[0], 'values')
             self.editing_index = -1 # Reset
             for i, record in enumerate(self.records):
