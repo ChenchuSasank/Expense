@@ -8,6 +8,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from collections import defaultdict
 from datetime import datetime, date, timedelta
 import math
+import csv
 
 DATA_FILE = 'data.json'
 FIELDS = ['Date', 'Category', 'Sub-Category', 'Amount', 'Remarks']
@@ -608,6 +609,8 @@ class ExpenseTrackerApp:
         tk.Button(self.main_area, text="Back to Home", command=self.show_home_page,
                   bg="green", fg="white", font=("Arial", 15), width=20).pack(pady=10)
 
+        tk.Button(self.main_area, text="Download Filtered Data", command=self.download_filtered_data,
+                  bg="orange", fg="white", font=("Arial", 14), width=20).pack(pady=10)
 
     def update_filter_subcategories_and_apply(self, event=None):
         income_categories = ["", "Allowance", "Salary", "Profit", "Cash", "Bonus", "Other Income"]
@@ -657,6 +660,50 @@ class ExpenseTrackerApp:
 
         filtered_records.sort(key=lambda x: datetime.strptime(x['Date'], "%Y-%m-%d"), reverse=True)
         self.populate_records_treeview(filtered_records)
+    
+    def download_filtered_data(self):
+        category = self.filter_category_var.get()
+        subcategory = self.filter_subcategory_var.get()
+        from_date_str = self.filter_from_date.get()
+        to_date_str = self.filter_to_date.get()
+
+        filtered_records = []
+        for record in self.records:
+            match = True
+
+            if category and record['Category'] != category:
+                match = False
+            if subcategory and record['Sub-Category'] != subcategory:
+                match = False
+
+            try:
+                record_date = datetime.strptime(record['Date'], "%Y-%m-%d").date()
+                if from_date_str:
+                    from_date = datetime.strptime(from_date_str, "%Y-%m-%d").date()
+                    if record_date < from_date:
+                        match = False
+                if to_date_str:
+                    to_date = datetime.strptime(to_date_str, "%Y-%m-%d").date()
+                    if record_date > to_date:
+                        match = False
+            except ValueError:
+                match = False
+
+            if match:
+                filtered_records.append(record)
+
+        if not filtered_records:
+            messagebox.showinfo("Info", "No records to download for selected filters.")
+            return
+
+        file_path = "filtered_records.csv"
+        with open(file_path, mode='w', newline='') as file:
+            writer = csv.DictWriter(file, fieldnames=FIELDS)
+            writer.writeheader()
+            writer.writerows(filtered_records)
+
+        messagebox.showinfo("Download Complete", f"Filtered records saved to {file_path}")
+
 
     def clear_filters(self):
         self.filter_category_var.set("")
