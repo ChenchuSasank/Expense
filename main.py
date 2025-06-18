@@ -446,9 +446,14 @@ class ExpenseTrackerApp:
 
         tk.Label(form_frame, text="Sub-Category:", **label_opts).grid(row=2, column=0, sticky="e", padx=20, pady=10)
         self.subcategory_var = tk.StringVar()
-        self.subcategory_combo = ttk.Combobox(form_frame, textvariable=self.subcategory_var,
-                                             state="readonly", font=('Arial', 13), width=38)
-        self.subcategory_combo.grid(row=2, column=1, sticky="w", pady=10)
+        self.subcategory_var = tk.StringVar()
+        self.subcategory_entry = tk.Entry(form_frame, textvariable=self.subcategory_var,
+                                        font=('Arial', 13), width=38)
+        self.subcategory_entry.grid(row=2, column=1, sticky="w", pady=10)
+        self.subcategory_entry.bind("<FocusIn>", self.show_subcategory_icons)
+
+        self.icon_button_frame = tk.Frame(form_frame, bg="lightgray")
+        self.icon_button_frame.grid(row=5, column=1, sticky="w", pady=5)
 
         tk.Label(form_frame, text="Amount:", **label_opts).grid(row=3, column=0, sticky="e", padx=20, pady=10)
         self.amount_entry = tk.Entry(form_frame, **entry_opts, validate='key',
@@ -481,15 +486,45 @@ class ExpenseTrackerApp:
             messagebox.showwarning("Warning", "No record selected for editing. Please select a record from the 'Manage Records' page.")
             self.show_manage_records_page()
 
+    def show_subcategory_icons(self, event=None):
+        for widget in self.icon_button_frame.winfo_children():
+            widget.destroy()
 
-    def update_subcategories(self, event):
-        income_categories = ["Allowance", "Salary", "Profit", "Cash", "Bonus", "Other Income"]
-        expense_categories = ["Food", "Rent", "Mobile Recharge", "Health", "Travel", "Fuel", "Shopping", "Other"]
-        if self.category_var.get() == "Income":
-            self.subcategory_combo['values'] = income_categories
-        else:
-            self.subcategory_combo['values'] = expense_categories
+        cat = self.category_var.get()
+        if not cat:
+            messagebox.showinfo("Info", "Please select Category first.")
+            return
+
+        icon_dict = {
+            "Income": {
+                "Allowance": "💸", "Salary": "💼", "Profit": "📈",
+                "Cash": "💰", "Bonus": "🎁", "Other Income": "➕"
+            },
+            "Expense": {
+                "Food": "🍔", "Rent": "🏠", "Mobile Recharge": "📱",
+                "Health": "💊", "Travel": "✈️", "Fuel": "⛽",
+                "Shopping": "🛍️", "Other": "❓"
+            }
+        }.get(cat, {})
+
+        def select_subcat(name):
+            self.subcategory_var.set(name)
+            for btn in self.icon_button_frame.winfo_children():
+                btn.configure(bg="SystemButtonFace")
+            button_refs[name].configure(bg="lightblue")
+
+        button_refs = {}
+        for i, (name, icon) in enumerate(icon_dict.items()):
+            btn = tk.Button(self.icon_button_frame, text=f"{icon} {name}", font=("Arial", 10),
+                            command=lambda n=name: select_subcat(n), width=18)
+            btn.grid(row=i // 2, column=i % 2, padx=5, pady=2)
+            button_refs[name] = btn
+
+
+    def update_subcategories(self, event=None):
         self.subcategory_var.set("")
+        for widget in self.icon_button_frame.winfo_children():
+            widget.destroy()
 
     def get_form_data(self):
         date = self.date_entry.get()
