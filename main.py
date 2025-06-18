@@ -59,16 +59,19 @@ class ExpenseTrackerApp:
             "We hope this app helps you gain better control over your financial journey!"
         )
 
-        instruction_label = tk.Label(
+        instruction_textbox = tk.Text(
             splash_frame,
-            text=instruction_text,
-            font=("Arial", 14),
+            font=("Courier New", 16, "bold"),
             fg="black",
             bg="lightgray",
-            wraplength=800,
-            justify=tk.LEFT
+            wrap="word",
+            relief="flat",
+            height=30,
+            width=100
         )
-        instruction_label.pack(pady=20, padx=50)
+        instruction_textbox.insert(tk.END, instruction_text)
+        instruction_textbox.config(state=tk.DISABLED)
+        instruction_textbox.pack(padx=200, pady=20, fill="x", anchor="center")
 
         start_button = tk.Button(
             splash_frame,
@@ -80,7 +83,7 @@ class ExpenseTrackerApp:
             pady=10,
             command=lambda: self.start_app(splash_frame)
         )
-        start_button.pack(pady=30)
+        start_button.pack(pady=30, padx=50, anchor="center")
 
     def start_app(self, splash_frame):
         splash_frame.destroy()
