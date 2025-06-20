@@ -130,7 +130,7 @@ class ExpenseTrackerApp:
         self.bottom_frame.pack(side=tk.BOTTOM, fill=tk.X)
         buttons_data = [
             ("Accounts", lambda: messagebox.showinfo("Info", "Accounts functionality coming soon!")),
-            ("Categories", lambda: messagebox.showinfo("Info", "Categories functionality coming soon!")),
+            ("Categories", self.show_subcategory_selection_page),
             ("Records", self.show_filtered_records_view),
             ("Reports", self.show_dashboard),
             ("Settings", lambda: messagebox.showinfo("Info", "Settings functionality coming soon!"))
@@ -230,6 +230,127 @@ class ExpenseTrackerApp:
             self.show_add_record_form
         )
         plus_button_canvas.pack()
+
+    def show_subcategory_selection_page(self):
+        from PIL import Image, ImageTk
+        self.clear_main_area()
+        tk.Label(self.main_area, text="Select a Sub-Category", font=('Arial', 20), bg="lightgray").pack(pady=10)
+
+        outer_frame = tk.Frame(self.main_area, bg="lightgray")
+        outer_frame.pack(fill=tk.BOTH, expand=True)
+
+        canvas = tk.Canvas(outer_frame, bg="lightgray", highlightthickness=0)
+        canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+
+        scrollbar = tk.Scrollbar(outer_frame, orient="vertical", command=canvas.yview)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+
+        canvas.configure(yscrollcommand=scrollbar.set)
+        canvas.bind('<Configure>', lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
+
+        subcategory_frame = tk.Frame(canvas, bg="lightgray")
+        canvas.create_window((0, 0), window=subcategory_frame, anchor="nw")
+
+        image_dict = {
+            "Allowance": "Images/allowance.png",
+            "Salary": "Images/salary.png",
+            "Profit": "Images/profit.png",
+            "Cash": "Images/cash.png",
+            "Bonus": "Images/bonus.png",
+            "Other Income": "Images/income.png",
+            "Food": "Images/food.png",
+            "Rent": "Images/rent.png",
+            "Mobile Recharge": "Images/mobile.png",
+            "Health": "Images/health.png",
+            "Travel": "Images/travel.png",
+            "Fuel": "Images/fuel.png",
+            "Shopping": "Images/shopping.png",
+            "Other Expense": "Images/expenses.png"
+        }
+
+        self.subcat_images = {}
+
+        known_income = ["Allowance", "Salary", "Profit", "Cash", "Bonus", "Other Income"]
+        known_expense = ["Food", "Rent", "Mobile Recharge", "Health", "Travel", "Fuel", "Shopping", "Other Expense"]
+
+        def create_button_grid(parent, items, row_start):
+            max_cols = 5
+            for i, subcat in enumerate(items):
+                image_path = image_dict.get(subcat)
+                try:
+                    img = Image.open(image_path).resize((40, 40), Image.LANCZOS)
+                    photo = ImageTk.PhotoImage(img)
+                    self.subcat_images[subcat] = photo
+
+                    btn = tk.Button(
+                        parent,
+                        image=photo,
+                        text=subcat,
+                        compound="top",
+                        font=("Arial", 10),
+                        width=100,
+                        height=100,
+                        wraplength=90,
+                        justify="center",
+                        command=lambda s=subcat: self.show_records_by_subcategory(s)
+                    )
+                except FileNotFoundError:
+                    btn = tk.Button(
+                        parent,
+                        text=subcat,
+                        font=("Arial", 10),
+                        width=100,
+                        height=100,
+                        wraplength=90,
+                        justify="center",
+                        command=lambda s=subcat: self.show_records_by_subcategory(s)
+                    )
+                btn.grid(row=row_start + i // max_cols, column=i % max_cols, padx=10, pady=10, sticky="nsew")
+
+        # Income Label and Buttons
+        tk.Label(subcategory_frame, text="Income", font=('Arial', 16, 'bold'), bg="lightgray", fg="green")\
+            .grid(row=0, column=0, columnspan=10, sticky="w", pady=(10, 5))
+        create_button_grid(subcategory_frame, known_income, row_start=1)
+
+        spacer = tk.Frame(subcategory_frame, height=20, bg="lightgray")
+        spacer.grid(row=3, column=0, columnspan=10)
+
+        tk.Frame(subcategory_frame, height=2, bg="black")\
+            .grid(row=4, column=0, columnspan=10, sticky="ew", pady=5)
+
+        tk.Label(subcategory_frame, text="Expense", font=('Arial', 16, 'bold'), bg="lightgray", fg="red")\
+            .grid(row=5, column=0, columnspan=10, sticky="w", pady=(10, 5))
+        create_button_grid(subcategory_frame, known_expense, row_start=6)
+
+        bottom_frame = tk.Frame(self.main_area, bg="lightgray")
+        bottom_frame.pack(fill=tk.X, pady=5)
+
+        tk.Button(bottom_frame, text="Back to Home", command=self.show_home_page,
+                  bg="green", fg="white", font=("Arial", 14), padx=20, pady=5).pack(pady=10)
+
+
+    def show_records_by_subcategory(self, selected_subcategory):
+        self.clear_main_area()
+        tk.Label(self.main_area, text=f"{selected_subcategory}", font=('Arial', 20), bg="lightgray").pack(pady=10)
+
+        subcat_records = [r for r in self.records if r['Sub-Category'] == selected_subcategory]
+        subcat_records.sort(key=lambda x: datetime.strptime(x['Date'], "%Y-%m-%d"), reverse=True)
+
+        if not subcat_records:
+            tk.Label(self.main_area, text="No data available for this sub-category.", font=('Arial', 16), bg="lightgray", fg="gray").pack(pady=20)
+        else:
+            columns = FIELDS
+            tree = ttk.Treeview(self.main_area, columns=columns, show='headings')
+            for field in FIELDS:
+                tree.heading(field, text=field)
+                tree.column(field, width=130)
+            tree.pack(expand=True, fill=tk.BOTH, padx=10, pady=10)
+
+            for record in subcat_records:
+                tree.insert('', tk.END, values=[record[field] for field in FIELDS])
+
+        tk.Button(self.main_area, text="Back to Sub-Categories", command=self.show_subcategory_selection_page,
+                  bg="steelblue", fg="white", font=("Arial", 14)).pack(side="bottom", pady=10)
 
     def show_dashboard(self):
         self.clear_main_area()
