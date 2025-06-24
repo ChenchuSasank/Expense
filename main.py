@@ -28,6 +28,7 @@ class ExpenseTrackerApp:
         self.root.geometry("1200x1000")
         self.root.configure(bg="black")
         self.show_splash_screen()
+        self.editing_index = None
 
     def show_splash_screen(self):
         splash_frame = tk.Frame(self.root, bg="lightgray")
@@ -116,14 +117,17 @@ class ExpenseTrackerApp:
             json.dump(self.records, f, indent=2)
 
     def create_top_buttons(self):
-        self.top_frame = tk.Frame(self.root, bg="lightgray")
-        self.top_frame.pack(side=tk.TOP, fill=tk.X)
-        buttons = [("Record Data", self.show_add_record_form),
-                   ("Show Data", self.show_manage_records_page),
-                   ("Modify Data", self.edit_selected_record)]
+        """Creates the navigation buttons at the top of the window."""
+        self.top_frame = tk.Frame(self.root, bg="lightgray", bd=2, relief="raised")
+        self.top_frame.pack(side=tk.TOP, fill=tk.X, padx=5, pady=5)
+        buttons = [
+            ("Record Data", self.show_add_record_form),
+            ("Show Data", self.show_manage_records_page),
+            ("Modify Data", self.edit_selected_record)  # ✅ New button
+        ]
         for name, command in buttons:
             tk.Button(self.top_frame, text=name, command=command, font=("Arial", 14), height=2,
-                      bd=0, bg="white", activebackground="white").pack(side=tk.LEFT, expand=True, fill=tk.X, padx=2, pady=5)
+                      bd=0, bg="white", activebackground="#f0f0f0", fg="black").pack(side=tk.LEFT, expand=True, fill=tk.X, padx=2, pady=5)
 
     def create_bottom_nav(self):
         self.bottom_frame = tk.Frame(self.root, bg="lightgray")
@@ -234,7 +238,7 @@ class ExpenseTrackerApp:
     def show_subcategory_selection_page(self):
         from PIL import Image, ImageTk
         self.clear_main_area()
-        tk.Label(self.main_area, text="Select a Sub-Category", font=('Arial', 20), bg="lightgray").pack(pady=10)
+        tk.Label(self.main_area, text="Sub-Category", font=('Arial', 20), bg="lightgray").pack(pady=10)
 
         outer_frame = tk.Frame(self.main_area, bg="lightgray")
         outer_frame.pack(fill=tk.BOTH, expand=True)
@@ -506,6 +510,16 @@ class ExpenseTrackerApp:
         """
         self.clear_main_area()
         self.build_record_form("Modify Expense Data" if edit else "Modify Expense Data", edit)
+        if edit and self.editing_index is not None:
+            record = self.records[self.editing_index]
+            self.date_entry.set_date(record['Date'])
+            self.category_var.set(record['Category'])
+            self.show_subcategory_icons()
+            self.subcategory_var.set(record['Sub-Category'])
+            self.amount_entry.delete(0, tk.END)
+            self.amount_entry.insert(0, record['Amount'])
+            self.remarks_entry.delete(0, tk.END)
+            self.remarks_entry.insert(0, record['Remarks'])
 
     def show_manage_records_page(self):
         """
@@ -514,13 +528,13 @@ class ExpenseTrackerApp:
         This is the page that "Show Data" and "Modify Data" buttons lead to.
         """
         self.clear_main_area()
-        tk.Label(self.main_area, text="Show Expense Data", font=('Arial', 20), bg="lightgray").pack(pady=10)
+        tk.Label(self.main_area, text="Manage Expense Records", font=('Arial', 20), bg="lightgray").pack(pady=10)
 
         columns = FIELDS
         self.tree = ttk.Treeview(self.main_area, columns=columns, show='headings')
         for field in FIELDS:
             self.tree.heading(field, text=field)
-            self.tree.column(field, width=130)
+            self.tree.column(field, width=130, anchor="center")
 
         self.tree.pack(expand=True, fill=tk.BOTH, padx=10, pady=10)
         self.tree.bind("<<TreeviewSelect>>", self.on_record_select)
@@ -531,15 +545,33 @@ class ExpenseTrackerApp:
         button_frame = tk.Frame(self.main_area, bg="lightgray")
         button_frame.pack(pady=10)
 
-        tk.Button(button_frame, text="Edit Selected", command=self.edit_selected_record,
-                  bg="dodgerblue", fg="white", font=("Arial", 15), width=20).pack(side=tk.LEFT, padx=10)
+        tk.Button(button_frame, text="Edit Selected", command=self.edit_selected_record, # <--- Here's the Edit Selected button
+                    bg="dodgerblue", fg="white", font=("Arial", 15), width=20).pack(side=tk.LEFT, padx=10)
 
         tk.Button(button_frame, text="Delete Selected", command=self.delete_selected_record,
-                  bg="red", fg="white", font=("Arial", 15), width=20).pack(side=tk.LEFT, padx=10)
+                    bg="red", fg="white", font=("Arial", 15), width=20).pack(side=tk.LEFT, padx=10)
 
         tk.Button(button_frame, text="Back to Home", command=self.show_home_page,
-                  bg="green", fg="white", font=("Arial", 15), width=20).pack(side=tk.LEFT, padx=10)
+                    bg="green", fg="white", font=("Arial", 15), width=20).pack(side=tk.LEFT, padx=10)
+        
+        for item in self.tree.get_children():
+            self.tree.delete(item)
 
+        for i, record in enumerate(self.records):
+            values = [record[field] for field in FIELDS]
+            self.tree.insert("", "end", iid=i, values=values)
+        
+    def load_record_for_edit(self):
+        try:
+            index = int(self.modify_index_var.get())
+            if index < 0 or index >= len(self.records):
+                raise IndexError
+        except:
+            messagebox.showerror("Error", "Invalid record number.")
+            return
+
+        self.editing_index = index
+        self.show_add_record_form(edit=True)
 
     def build_record_form(self, title, edit=False):
         """
@@ -598,13 +630,16 @@ class ExpenseTrackerApp:
         tk.Button(button_frame, text="Back to Home", command=self.show_home_page,
                   bg="green", fg="white", font=("Arial", 14), width=15).pack(side=tk.LEFT, padx=20)
 
-        if edit and self.editing_index is not None and 0 <= self.editing_index < len(self.records):
+        if edit and self.editing_index is not None:
             record = self.records[self.editing_index]
             self.date_entry.set_date(record['Date'])
             self.category_var.set(record['Category'])
-            self.update_subcategories(None)
+            self.update_subcategories(None)  # if you clear/update icon buttons
+            self.show_subcategory_icons()    # optional: to show the icons
             self.subcategory_var.set(record['Sub-Category'])
+            self.amount_entry.delete(0, tk.END)
             self.amount_entry.insert(0, record['Amount'])
+            self.remarks_entry.delete(0, tk.END)
             self.remarks_entry.insert(0, record['Remarks'])
         elif edit:
             messagebox.showwarning("Warning", "No record selected for editing. Please select a record from the 'Manage Records' page.")
@@ -676,12 +711,14 @@ class ExpenseTrackerApp:
         }
 
     def save_record(self):
-        record = self.get_form_data()
-        if not record:
-            return
-        self.records.append(record)
+        if self.editing_index is not None:
+            self.records[self.editing_index] = record
+            self.editing_index = None
+        else:
+            self.records.append(record)
+
         self.save_data()
-        messagebox.showinfo("Success", "Record added successfully!")
+        messagebox.showinfo("Success", "Record saved successfully!")
         self.show_manage_records_page()
 
     def update_record(self):
@@ -702,7 +739,7 @@ class ExpenseTrackerApp:
 
     def show_filtered_records_view(self):
         self.clear_main_area()
-        tk.Label(self.main_area, text="View Records (Filtered)", font=('Arial', 20), bg="lightgray").pack(pady=10)
+        tk.Label(self.main_area, text="Records", font=('Arial', 20), bg="lightgray").pack(pady=10)
 
         filter_frame = tk.Frame(self.main_area, bg="lightgray")
         filter_frame.pack(pady=10)
@@ -884,9 +921,6 @@ class ExpenseTrackerApp:
             self.tree.insert('', tk.END, iid=index, values=[record[field] for field in FIELDS])
 
     def on_record_select(self, event):
-        """
-        Updates self.editing_index when a row is selected in the Treeview.
-        """
         selected_items = self.tree.selection()
         if selected_items:
             self.editing_index = int(selected_items[0])
@@ -895,13 +929,12 @@ class ExpenseTrackerApp:
 
     def edit_selected_record(self):
         """
-        Checks if a record is selected, then opens the add/edit form in edit mode.
+        Loads the selected record into the add/edit form for modification.
         """
         if self.editing_index is not None and 0 <= self.editing_index < len(self.records):
             self.show_add_record_form(edit=True)
         else:
             messagebox.showwarning("Warning", "Please select a record from the table to edit.")
-            self.editing_index = None
 
     def delete_selected_record(self):
         """
