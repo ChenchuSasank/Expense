@@ -26,7 +26,7 @@ class ExpenseTrackerApp:
         self.root = root
         self.root.title("Expense Tracker")
         self.root.geometry("1200x1000")
-        self.root.configure(bg="black")
+        self.root.configure(bg="lightgray")
         self.show_splash_screen()
         self.editing_index = None
 
@@ -238,7 +238,9 @@ class ExpenseTrackerApp:
     def show_subcategory_selection_page(self):
         from PIL import Image, ImageTk
         self.clear_main_area()
-        tk.Label(self.main_area, text="Sub-Category", font=('Arial', 20), bg="lightgray").pack(pady=10)
+
+        tk.Label(self.main_area, text="Sub-Categories", font=('Arial', 20, 'bold'), bg="lightgray")\
+            .pack(pady=(10, 5))
 
         outer_frame = tk.Frame(self.main_area, bg="lightgray")
         outer_frame.pack(fill=tk.BOTH, expand=True)
@@ -253,84 +255,90 @@ class ExpenseTrackerApp:
         canvas.bind('<Configure>', lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
 
         subcategory_frame = tk.Frame(canvas, bg="lightgray")
-        canvas.create_window((0, 0), window=subcategory_frame, anchor="nw")
+        canvas.create_window((0, 0), window=subcategory_frame, anchor="n")
 
         image_dict = {
-            "Allowance": "Images/allowance.png",
-            "Salary": "Images/salary.png",
-            "Profit": "Images/profit.png",
-            "Cash": "Images/cash.png",
-            "Bonus": "Images/bonus.png",
-            "Other Income": "Images/income.png",
-            "Food": "Images/food.png",
-            "Rent": "Images/rent.png",
-            "Mobile Recharge": "Images/mobile.png",
-            "Health": "Images/health.png",
-            "Travel": "Images/travel.png",
-            "Fuel": "Images/fuel.png",
-            "Shopping": "Images/shopping.png",
-            "Other Expense": "Images/expenses.png"
-        }
+                "Allowance": "C:/Users/chenc/Desktop/Expense_Tracker S/Images/allowance.png",
+                "Salary": "C:/Users/chenc/Desktop/Expense_Tracker S/Images/salary.png",
+                "Profit": "C:/Users/chenc/Desktop/Expense_Tracker S/Images/profit.png",
+                "Cash": "C:/Users/chenc/Desktop/Expense_Tracker S/Images/cash.png",
+                "Bonus": "C:/Users/chenc/Desktop/Expense_Tracker S/Images/bonus.png",
+                "Other Income": "C:/Users/chenc/Desktop/Expense_Tracker S/Images/income.png",
+                "Food": "C:/Users/chenc/Desktop/Expense_Tracker S/Images/food.png",
+                "Rent": "C:/Users/chenc/Desktop/Expense_Tracker S/Images/rent.png",
+                "Mobile Recharge": "C:/Users/chenc/Desktop/Expense_Tracker S/Images/mobile.png",
+                "Health": "C:/Users/chenc/Desktop/Expense_Tracker S/Images/health.png",
+                "Travel": "C:/Users/chenc/Desktop/Expense_Tracker S/Images/travel.png",
+                "Fuel": "C:/Users/chenc/Desktop/Expense_Tracker S/Images/fuel.png",
+                "Shopping": "C:/Users/chenc/Desktop/Expense_Tracker S/Images/shopping.png",
+                "Other Expense": "C:/Users/chenc/Desktop/Expense_Tracker S/Images/expenses.png"
+            }
 
         self.subcat_images = {}
-
         known_income = ["Allowance", "Salary", "Profit", "Cash", "Bonus", "Other Income"]
         known_expense = ["Food", "Rent", "Mobile Recharge", "Health", "Travel", "Fuel", "Shopping", "Other Expense"]
 
-        def create_button_grid(parent, items, row_start):
-            max_cols = 5
-            for i, subcat in enumerate(items):
+        def create_centered_button_block(parent, title, subcats):
+            # Section title
+            tk.Label(parent, text=title, font=('Arial', 14, 'bold'),
+                    bg="lightgray", fg="green" if title == "Income" else "red")\
+                .pack(pady=(10, 5))
+
+            # Inner frame centered inside the canvas
+            frame = tk.Frame(parent, bg="lightgray")
+            frame.pack(anchor="center")
+
+            max_cols = 4
+            for i, subcat in enumerate(subcats):
                 image_path = image_dict.get(subcat)
                 try:
                     img = Image.open(image_path).resize((40, 40), Image.LANCZOS)
                     photo = ImageTk.PhotoImage(img)
                     self.subcat_images[subcat] = photo
-
                     btn = tk.Button(
-                        parent,
+                        frame,
                         image=photo,
                         text=subcat,
                         compound="top",
-                        font=("Arial", 10),
-                        width=100,
-                        height=100,
-                        wraplength=90,
+                        font=("Arial", 9),
+                        width=75,
+                        height=75,
+                        wraplength=65,
                         justify="center",
                         command=lambda s=subcat: self.show_records_by_subcategory(s)
                     )
                 except FileNotFoundError:
                     btn = tk.Button(
-                        parent,
+                        frame,
                         text=subcat,
-                        font=("Arial", 10),
-                        width=100,
-                        height=100,
-                        wraplength=90,
+                        font=("Arial", 9),
+                        width=75,
+                        height=75,
+                        wraplength=65,
                         justify="center",
                         command=lambda s=subcat: self.show_records_by_subcategory(s)
                     )
-                btn.grid(row=row_start + i // max_cols, column=i % max_cols, padx=10, pady=10, sticky="nsew")
 
-        # Income Label and Buttons
-        tk.Label(subcategory_frame, text="Income", font=('Arial', 16, 'bold'), bg="lightgray", fg="green")\
-            .grid(row=0, column=0, columnspan=10, sticky="w", pady=(10, 5))
-        create_button_grid(subcategory_frame, known_income, row_start=1)
+                row = i // max_cols
+                col = i % max_cols
+                btn.grid(row=row, column=col, padx=10, pady=10)
 
-        spacer = tk.Frame(subcategory_frame, height=20, bg="lightgray")
-        spacer.grid(row=3, column=0, columnspan=10)
+        # Add Income block
+        create_centered_button_block(subcategory_frame, "Income", known_income)
 
-        tk.Frame(subcategory_frame, height=2, bg="black")\
-            .grid(row=4, column=0, columnspan=10, sticky="ew", pady=5)
+        # Black separator
+        separator = tk.Frame(subcategory_frame, bg="black", height=3, width=400)
+        separator.pack(pady=10)
 
-        tk.Label(subcategory_frame, text="Expense", font=('Arial', 16, 'bold'), bg="lightgray", fg="red")\
-            .grid(row=5, column=0, columnspan=10, sticky="w", pady=(10, 5))
-        create_button_grid(subcategory_frame, known_expense, row_start=6)
+        # Add Expense block
+        create_centered_button_block(subcategory_frame, "Expense", known_expense)
 
+        # Back button
         bottom_frame = tk.Frame(self.main_area, bg="lightgray")
-        bottom_frame.pack(fill=tk.X, pady=5)
+        bottom_frame.pack(fill=tk.X, pady=10)
 
         tk.Button(bottom_frame, text="Back to Home", command=self.show_home_page,
-                  bg="green", fg="white", font=("Arial", 14), padx=20, pady=5).pack(pady=10)
+                bg="green", fg="white", font=("Arial", 12), padx=15, pady=5).pack()
 
 
     def show_records_by_subcategory(self, selected_subcategory):
@@ -494,22 +502,13 @@ class ExpenseTrackerApp:
         canvas_widget.pack(pady=10, fill=tk.BOTH, expand=True)
         plt.close(fig)
 
-    def validate_amount(self, value):
-        if value == "":
-            return True
-        try:
-            float(value)
-            return True
-        except ValueError:
-            return False
-
     def show_add_record_form(self, edit=False):
         """
         Displays the form to add a new record or edit an existing one.
         If edit is True, it pre-fills the form with data from self.records[self.editing_index].
         """
         self.clear_main_area()
-        self.build_record_form("Modify Expense Data" if edit else "Modify Expense Data", edit)
+        self.build_record_form("Modify Expense Data" if edit else "Record Expense Data", edit)
         if edit and self.editing_index is not None:
             record = self.records[self.editing_index]
             self.date_entry.set_date(record['Date'])
@@ -711,6 +710,10 @@ class ExpenseTrackerApp:
         }
 
     def save_record(self):
+        record = self.get_form_data()
+        if not record:
+            return
+
         if self.editing_index is not None:
             self.records[self.editing_index] = record
             self.editing_index = None
@@ -720,6 +723,7 @@ class ExpenseTrackerApp:
         self.save_data()
         messagebox.showinfo("Success", "Record saved successfully!")
         self.show_manage_records_page()
+
 
     def update_record(self):
         if self.editing_index is None or self.editing_index == -1:
@@ -951,6 +955,14 @@ class ExpenseTrackerApp:
             messagebox.showwarning("Warning", "Please select a record from the table to delete.")
             self.editing_index = None
 
+    def validate_amount(self, value):
+        if value == "":
+            return True
+        try:
+            float(value)
+            return True
+        except ValueError:
+            return False
 
 if __name__ == "__main__":
     root = tk.Tk()
