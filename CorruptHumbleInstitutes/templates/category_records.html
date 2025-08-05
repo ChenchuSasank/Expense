@@ -1,0 +1,40 @@
+
+{% extends "base.html" %}
+
+{% block content %}
+<div class="card">
+    <h2>📊 {{ category }} Records</h2>
+
+    {% if records %}
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Category</th>
+                    <th>Amount</th>
+                    <th>Remarks</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for record in records %}
+                <tr>
+                    <td>{{ record.Date }}</td>
+                    <td>{{ record.Category }}</td>
+                    <td>₹{{ record.Amount }}</td>
+                    <td>{{ record.Remarks }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p style="text-align: center; color: #666; padding: 40px;">No records found for this category.</p>
+    {% endif %}
+
+    <div style="display: flex; gap: 10px; margin-top: 20px;">
+        <a href="{{ url_for('categories') }}" class="btn" style="background: #6c757d; flex: 1;">🔙 Back to Categories</a>
+        <a href="{{ url_for('home') }}" class="btn" style="background: #4a90e2; flex: 1;">🏠 Back to Home</a>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,215 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+.auth-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: calc(100vh - 200px);
+    padding: 20px;
+}
+
+.auth-card {
+    background: white;
+    padding: 40px;
+    border-radius: 20px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    max-width: 500px;
+    width: 100%;
+}
+
+.auth-title {
+    text-align: center;
+    color: #4a90e2;
+    margin-bottom: 30px;
+    font-size: 28px;
+}
+
+.auth-form-group {
+    margin-bottom: 20px;
+}
+
+.auth-form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: #555;
+}
+
+.auth-form-group input {
+    width: 100%;
+    padding: 15px;
+    border: 2px solid #ddd;
+    border-radius: 10px;
+    font-size: 16px;
+    transition: border-color 0.3s ease;
+}
+
+.auth-form-group input:focus {
+    outline: none;
+    border-color: #4a90e2;
+}
+
+.auth-btn {
+    width: 100%;
+    background: #4a90e2;
+    color: white;
+    border: none;
+    padding: 15px;
+    border-radius: 10px;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.3s ease;
+    margin-top: 10px;
+}
+
+.auth-btn:hover {
+    background: #357abd;
+}
+
+.auth-btn-secondary {
+    background: #6c757d;
+}
+
+.auth-btn-secondary:hover {
+    background: #5a6268;
+}
+
+.auth-link {
+    text-align: center;
+    margin-top: 20px;
+    color: #666;
+}
+
+.auth-link a {
+    color: #4a90e2;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.auth-link a:hover {
+    text-decoration: underline;
+}
+
+.error-message {
+    background: #fee;
+    color: #c33;
+    padding: 10px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    border: 1px solid #fcc;
+}
+
+.success-message {
+    background: #efe;
+    color: #3c3;
+    padding: 10px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    border: 1px solid #cfc;
+}
+
+.button-group {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-top: 10px;
+}
+</style>
+
+<div class="auth-container">
+    <div class="auth-card">
+        <h1 class="auth-title">🔐 Sign In</h1>
+        
+        {% if error %}
+        <div class="error-message">{{ error }}</div>
+        {% endif %}
+        
+        {% if success %}
+        <div class="success-message">{{ success }}</div>
+        {% endif %}
+
+        <form action="{{ url_for('signin_process') }}" method="POST" id="signin-form">
+            <div class="auth-form-group">
+                <label for="email">📧 Gmail (can contain letters, numbers, must end with @gmail.com):</label>
+                <input type="email" id="email" name="email" required placeholder="YourName123@gmail.com">
+            </div>
+
+            <div class="auth-form-group">
+                <label for="password">🔒 Password:</label>
+                <input type="password" id="password" name="password" required minlength="8" placeholder="password">
+            </div>
+
+            <div class="button-group">
+                <button type="submit" class="auth-btn">🚀 Sign In</button>
+                <button type="button" class="auth-btn auth-btn-secondary" onclick="window.location.href='{{ url_for('forgot_password') }}'">🔑 Forgot Password</button>
+            </div>
+        </form>
+
+        <div class="auth-link">
+            Don't have an account? <a href="{{ url_for('signup') }}">Sign Up</a>
+        </div>
+        
+        <div class="auth-link">
+            <a href="{{ url_for('auth_choice') }}">← Back to Authentication</a>
+        </div>
+    </div>
+</div>
+
+<script>
+function validateForm() {
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+
+    if (!email || !password) {
+        alert('Please fill in both the Gmail and password fields.');
+        return false;
+    }
+    
+    if (!email.toLowerCase().endsWith('@gmail.com')) {
+        alert('Please enter a valid Gmail address ending with @gmail.com');
+        return false;
+    }
+    
+    if (password.length < 8) {
+        alert('Password must be at least 8 characters long.');
+        return false;
+    }
+    
+    return true;
+}
+
+// Attach validation to form submit
+document.getElementById('signin-form').onsubmit = function(event) {
+    if (!validateForm()) {
+        event.preventDefault();
+    }
+};
+
+// Real-time email validation
+document.getElementById('email').addEventListener('input', function() {
+    const email = this.value.trim();
+    if (email.length > 0 && !email.toLowerCase().endsWith('@gmail.com')) {
+        this.setCustomValidity('Gmail must end with @gmail.com');
+    } else {
+        this.setCustomValidity('');
+    }
+});
+
+function forgotPassword() {
+    const email = document.getElementById('email').value.trim();
+    if (!email) {
+        alert('Please enter your Gmail address first.');
+        return;
+    }
+    if (!email.endsWith('@gmail.com')) {
+        alert('Please enter a valid Gmail address ending with @gmail.com');
+        return;
+    }
+    alert('Password reset instructions will be sent to: ' + email + '\n\n(This is a demo - password reset functionality not implemented yet)');
+}
+</script>
+{% endblock %}

@@ -1,0 +1,118 @@
+
+{% extends "base.html" %}
+
+{% block content %}
+<div class="card">
+    <h2>📊 Show Data</h2>
+
+    <!-- Category Filter -->
+    <div style="margin-bottom: 20px; text-align: center;">
+        <form method="GET" style="display: inline-flex; gap: 10px; align-items: center;">
+            <label for="category_type" style="font-weight: bold;">Filter by Category:</label>
+            <select name="category_type" id="category_type" style="padding: 8px 16px; border-radius: 10px; border: 1px solid #ccc; min-width: 200px; min-height: 44px">
+                <option value="">All Categories</option>
+                <option value="Income" {{ 'selected' if category_filter == 'Income' }}>Income</option>
+                <option value="Expense" {{ 'selected' if category_filter == 'Expense' }}>Expense</option>
+            </select>
+            <button type="submit" class="btn" style="padding: 8px 16px; min-width: 250px;">Filter</button>
+            <a href="{{ url_for('show_data') }}" class="btn" style="background: #6c757d; padding: 8px 16px; min-width: 250px;">Clear</a>
+        </form>
+    </div>
+
+    {% if records %}
+    <!-- Single Combined Records Table -->
+    <form id="recordsForm" method="POST" action="{{ url_for('show_data') }}">
+        <div class="table-responsive" style="margin-bottom: 20px;">
+            <table class="table">
+                <thead style="background: #f8f9fa;">
+                    <tr>
+                        <th style="width: 50px;">Select</th>
+                        <th>Date</th>
+                        <th>Category</th>
+                        <th>Sub-Category</th>
+                        <th>Amount</th>
+                        <th>Remarks</th>
+                        <th style="width: 140px;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for record, original_index in indexed_records %}
+                    <tr>
+                        <td><input type="checkbox" name="selected_records" value="{{ original_index }}" class="record-checkbox"></td>
+                        <td style="font-weight: bold;">{{ record.Date }}</td>
+                        <td>
+                            {% if record.Category == 'Income' %}
+                                <span style="color: #27ae60; font-weight: bold;">💰 {{ record.Category }}</span>
+                            {% else %}
+                                <span style="color: #e74c3c; font-weight: bold;">💸 {{ record.Category }}</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ record['Sub-Category'] }}</td>
+                        <td style="font-weight: bold; color: {{ '#27ae60' if record.Category == 'Income' else '#e74c3c' }};">₹{{ record.Amount }}</td>
+                        <td>{{ record.Remarks or '-' }}</td>
+                        <td>
+                            <a href="{{ url_for('edit_record', index=original_index) }}" class="btn" style="padding: 6px 12px; font-size: 12px; margin-right: 5px; min-width: 100px; text-align: center; background: #4a90e2; color: white; text-decoration: none;">✏️ Edit</a>
+                            <br>
+                            <br>
+                            <a href="{{ url_for('delete_record', index=original_index) }}" class="btn btn-danger" style="padding: 6px 12px; font-size: 12px; min-width: 100px; text-align: center; color: white; text-decoration: none;" onclick="return confirm('Are you sure?')">🗑️ Delete</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </form>
+
+    <!-- Action Buttons -->
+    <div style="margin-top: 30px; text-align: center;">
+        <button type="button" class="btn" onclick="editSelected()" style="padding: 12px 24px; min-width: 250px; background: #4a90e2; color: white;">✏️ Edit Selected</button>
+        <button type="button" class="btn btn-danger" onclick="deleteSelected()" style="padding: 12px 24px; min-width: 250px;">🗑️ Delete Selected</button>
+        <a href="{{ url_for('home') }}" class="btn" style="background: #6c757d; padding: 12px 24px; min-width: 250px; color: white; text-decoration: none;">🔙 Back to Home</a>
+    </div>
+
+    <script>
+    function editSelected() {
+        const selected = document.querySelectorAll('input[name="selected_records"]:checked');
+        if (selected.length === 0) {
+            alert('Please select at least one record to edit.');
+            return;
+        }
+        if (selected.length > 1) {
+            alert('Please select only one record to edit.');
+            return;
+        }
+
+        const form = document.getElementById('recordsForm');
+        form.action = "{{ url_for('bulk_edit') }}";
+        form.submit();
+    }
+
+    function deleteSelected() {
+        const selected = document.querySelectorAll('input[name="selected_records"]:checked');
+        if (selected.length === 0) {
+            alert('Please select at least one record to delete.');
+            return;
+        }
+
+        if (confirm(`Are you sure you want to delete ${selected.length} record(s)?`)) {
+            const form = document.getElementById('recordsForm');
+            form.action = "{{ url_for('bulk_delete') }}";
+            form.submit();
+        }
+    }
+    </script>
+
+    {% else %}
+    <p style="text-align: center; color: #666; padding: 40px;">
+        {% if category_filter %}
+            No {{ category_filter.lower() }} records found.
+        {% else %}
+            No records found.
+        {% endif %}
+    </p>
+    <div style="text-align: center; margin-top: 20px;">
+        <a href="{{ url_for('home') }}" class="btn" style="background: #6c757d; padding: 12px 24px; color: white; text-decoration: none;">🏠 Back to Home</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

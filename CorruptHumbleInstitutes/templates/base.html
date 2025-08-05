@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Expense Tracker{% endblock %}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4a90e2, #357abd);
+            color: white;
+            padding: 1rem;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .nav-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .nav-btn {
+            background: #4a90e2;
+            color: white;
+            margin: 10px 0;
+            padding: 12px 20px;
+            text-decoration: none;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 140px;
+            height: 44px;
+            box-sizing: border-box;
+        }
+
+        .nav-btn:hover {
+            background: #4a90e2;
+            color: white;
+        }
+
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            display: flex;
+            justify-content: space-around;
+            padding: 8px 3px;
+            border-top: 1px solid #e0e0e0;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
+
+        .bottom-nav a {
+            text-decoration: none;
+            color: #666;
+            text-align: center;
+            font-size: 10px;
+            padding: 4px 2px;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+            flex: 1;
+            max-width: {% if session.get('logged_in') %}50px{% else %}60px{% endif %};
+        }
+
+        .bottom-nav a.active {
+            background-color: #4a90e2;
+            color: white;
+        }
+
+        .bottom-nav a:hover {
+            background-color: #f0f0f0;
+        }
+
+        .bottom-nav a.active:hover {
+            background-color: #357abd;
+        }
+
+        .content {
+            margin-bottom: 80px;
+            padding: 20px 0;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 0;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+            height: 44px;
+            box-sizing: border-box;
+            padding-left: 12px;
+            padding-right: 12px;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #4a90e2;
+        }
+
+        .btn {
+            background: #4a90e2;
+            color: white;
+            border: none;
+            padding: 0;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            min-width: 140px;
+            height: 44px;
+            box-sizing: border-box;
+            font-weight: 500;
+        }
+
+        .btn:hover {
+            background: #357abd;
+        }
+
+        .btn-danger {
+            background: #e74c3c;
+        }
+
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+
+        .btn-success {
+            background: #27ae60;
+        }
+
+        .btn-success:hover {
+            background: #219a52;
+        }
+
+        .table-responsive {
+            overflow-x: auto;
+            margin: 20px 0;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .table th,
+        .table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        .table th {
+            background: #f8f9fa;
+            font-weight: bold;
+            color: #555;
+        }
+
+        .fab {
+            position: fixed;
+            bottom: 90px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            background: #4a90e2;
+            color: white;
+            border-radius: 50%;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease;
+        }
+
+        .fab:hover {
+            transform: scale(1.1);
+        }
+
+        .subcategory-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .subcategory-btn {
+            background: white;
+            border: 2px solid #ddd;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            text-decoration: none;
+            color: #333;
+            transition: all 0.3s ease;
+        }
+
+        .subcategory-btn:hover {
+            border-color: #4a90e2;
+            background: #f8f9fa;
+        }
+
+        .subcategory-btn .icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .filter-form {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .filter-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+		
+		.amount-expense {
+            color: #FF8C00;
+            font-weight: bold;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+
+            .nav-buttons {
+                grid-template-columns: 1fr;
+            }
+
+            .filter-row {
+                grid-template-columns: 1fr;
+            }
+
+            .table th,
+            .table td {
+                padding: 8px 4px;
+                font-size: 14px;
+            }
+
+            .subcategory-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+    <script>
+        // Auto-logout functionality
+        let idleTimer;
+        let warningTimer;
+        const IDLE_TIME = 25 * 60 * 1000; // 25 minutes
+        const WARNING_TIME = 5 * 60 * 1000; // 5 minutes before logout
+
+        function resetIdleTimer() {
+            clearTimeout(idleTimer);
+            clearTimeout(warningTimer);
+
+            // Show warning 5 minutes before logout
+            warningTimer = setTimeout(() => {
+                if (confirm('You will be logged out in 5 minutes due to inactivity. Click OK to stay logged in.')) {
+                    resetIdleTimer();
+                } else {
+                    logout();
+                }
+            }, WARNING_TIME);
+
+            // Auto logout after 30 minutes
+            idleTimer = setTimeout(() => {
+                alert('You have been logged out due to inactivity.');
+                logout();
+            }, IDLE_TIME + WARNING_TIME);
+        }
+
+        function logout() {
+            window.location.href = '/logout';
+        }
+
+        // Track user activity
+        if (window.location.pathname !== '/' && window.location.pathname !== '/auth_choice' && 
+            window.location.pathname !== '/signin' && window.location.pathname !== '/signup') {
+            document.addEventListener('mousemove', resetIdleTimer);
+            document.addEventListener('keypress', resetIdleTimer);
+            document.addEventListener('click', resetIdleTimer);
+            document.addEventListener('scroll', resetIdleTimer);
+
+            // Start the timer
+            resetIdleTimer();
+        }
+
+        // Highlight active navigation button
+        document.addEventListener('DOMContentLoaded', function() {
+            const currentPath = window.location.pathname;
+            const navLinks = document.querySelectorAll('.bottom-nav a');
+
+            navLinks.forEach(link => {
+                const linkPath = new URL(link.href).pathname;
+                if (currentPath === linkPath || 
+                    (currentPath.includes('/expense_dashboard') && linkPath === '/home') ||
+                    (currentPath.includes('/income_dashboard') && linkPath === '/home') ||
+                    (currentPath.includes('/add_record') && linkPath === '/home') ||
+                    (currentPath.includes('/manage_records') && linkPath === '/records') ||
+                    (currentPath.includes('/show_data') && linkPath === '/records') ||
+                    (currentPath.includes('/category_records') && linkPath === '/categories') ||
+                    (currentPath.includes('/manage_subcategories') && linkPath === '/categories')) {
+                    link.classList.add('active');
+                }
+            });
+        });
+    </script>
+</head>
+<body>
+    <div class="header">
+        <h1>💰 Expense Tracker</h1>
+        <p>Smart financial management made simple</p>
+    </div>
+
+    <div class="container">
+        <div class="content">
+            {% block content %}{% endblock %}
+        </div>
+    </div>
+
+    <div class="bottom-nav">
+        <a href="{{ url_for('home') }}">
+            🏠<br>Home
+        </a>
+        <a href="{{ url_for('categories') }}">
+            📂<br>Categories
+        </a>
+        <a href="{{ url_for('filtered_records') }}">
+            📊<br>Records
+        </a>
+        <a href="{{ url_for('reports') }}">
+            📈<br>Reports
+        </a>
+        <a href="{{ url_for('settings') }}">
+            ⚙️<br>Settings
+        </a>
+        {% if session.get('logged_in') %}
+        <a href="{{ url_for('logout') }}" onclick="return confirm('Are you sure you want to logout?')">
+            🚪<br>Logout
+        </a>
+        {% endif %}
+    </div>
+
+    {% if request.endpoint == 'home' %}
+    <a href="{{ url_for('add_record_form') }}" class="fab">+</a>
+    {% endif %}
+</body>
+</html>

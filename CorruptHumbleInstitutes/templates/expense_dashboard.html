@@ -1,0 +1,130 @@
+
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+.dashboard-container {
+    padding: 20px;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.dashboard-header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.dashboard-header h2 {
+    color: #e74c3c;
+    font-size: 28px;
+    margin-bottom: 10px;
+}
+
+.dashboard-header p {
+    color: #666;
+    font-size: 16px;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+.action-btn {
+    flex: 1;
+    background: linear-gradient(135deg, #FF8C00, #FF7F00);
+    color: white;
+    text-decoration: none;
+    padding: 25px 15px;
+    border-radius: 12px;
+    text-align: center;
+    font-weight: bold;
+    font-size: 16px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+    min-height: 100px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.action-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+}
+
+.action-btn .icon {
+    font-size: 24px;
+    margin-bottom: 8px;
+}
+
+.back-btn {
+    background: linear-gradient(135deg, #6c757d, #5a6268);
+    color: white;
+    text-decoration: none;
+    padding: 0;
+    border-radius: 8px;
+    text-align: center;
+    font-weight: 500;
+    margin-top: 20px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 300px;
+    height: 44px;
+    box-sizing: border-box;
+    font-size: 16px;
+}
+
+.back-btn:hover {
+    background: linear-gradient(135deg, #5a6268, #495057);
+}
+
+@media (max-width: 768px) {
+    .action-buttons {
+        flex-direction: row;
+        gap: 10px;
+    }
+    
+    .action-btn {
+        padding: 20px 10px;
+        font-size: 14px;
+        min-height: 80px;
+    }
+    
+    .action-btn .icon {
+        font-size: 20px;
+    }
+}
+</style>
+
+<div class="dashboard-container">
+    <div class="dashboard-header">
+        <h2>💸 Expense Management</h2>
+        <p>Manage your expense records</p>
+    </div>
+
+    <div class="action-buttons">
+        <a href="{{ url_for('add_record_form', category='Expense') }}" class="action-btn">
+            <div class="icon">📝</div>
+            <div>Add Expense</div>
+        </a>
+        <a href="{{ url_for('show_data', category_type='Expense') }}" class="action-btn">
+            <div class="icon">📊</div>
+            <div>Fetch Data</div>
+        </a>
+        <a href="{{ url_for('manage_records', category='Expense') }}" class="action-btn">
+            <div class="icon">✏️</div>
+            <div>Manage Data</div>
+        </a>
+    </div>
+
+    <div style="text-align: center;">
+        <a href="{{ url_for('home') }}" class="back-btn">🏠 Back to Home</a>
+    </div>
+</div>
+{% endblock %}

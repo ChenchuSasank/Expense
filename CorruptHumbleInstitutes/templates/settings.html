@@ -1,0 +1,225 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+.settings-container {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.settings-card {
+    background: white;
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    margin-bottom: 25px;
+}
+
+.settings-title {
+    color: #4a90e2;
+    margin-bottom: 20px;
+    font-size: 28px;
+    text-align: center;
+}
+
+.settings-section {
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #eee;
+}
+
+.settings-section:last-child {
+    border-bottom: none;
+}
+
+.settings-section h3 {
+    color: #555;
+    margin-bottom: 15px;
+    font-size: 20px;
+}
+
+.settings-option {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.settings-option:last-child {
+    border-bottom: none;
+}
+
+.option-info {
+    flex: 1;
+}
+
+.option-title {
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 5px;
+}
+
+.option-description {
+    color: #666;
+    font-size: 14px;
+}
+
+.option-action {
+    margin-left: 20px;
+}
+
+.settings-btn {
+    background: #4a90e2;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+    text-align: center;
+    min-width: 100px;
+    height: 44px;
+    line-height: 20px;
+}
+
+.settings-btn:hover {
+    background: #357abd;
+}
+
+.settings-btn.danger {
+    background: #e74c3c;
+}
+
+.settings-btn.danger:hover {
+    background: #c0392b;
+}
+
+.settings-btn.success {
+    background: #27ae60;
+}
+
+.settings-btn.success:hover {
+    background: #219a52;
+}
+
+.user-info {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+
+.user-info h4 {
+    color: #4a90e2;
+    margin-bottom: 10px;
+}
+
+.user-detail {
+    margin-bottom: 8px;
+    color: #555;
+}
+</style>
+
+<div class="settings-container">
+    <div class="settings-card">
+        <h1 class="settings-title">⚙️ Settings</h1>
+
+        <div class="user-info">
+            <h4>👤 Account Information</h4>
+            <div class="user-detail"><strong>Username:</strong> {{ username }}</div>
+            <div class="user-detail"><strong>Status:</strong> <span style="color: #27ae60;">Active</span></div>
+        </div>
+
+        <div class="settings-section">
+            <h3>🔐 Account Settings</h3>
+
+            <div class="settings-option">
+                <div class="option-info">
+                    <div class="option-title">Change Password</div>
+                    <div class="option-description">Update your account password for security</div>
+                </div>
+                <div class="option-action">
+                    <a href="{{ url_for('forgot_password') }}" class="settings-btn">🔑 Change</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="settings-section">
+            <h3>📊 Data Management</h3>
+
+            <div class="settings-option">
+                <div class="option-info">
+                    <div class="option-title">Export All Data</div>
+                    <div class="option-description">Download all your financial records as CSV</div>
+                </div>
+                <div class="option-action">
+                    <a href="{{ url_for('download_csv') }}" class="settings-btn success">📥 Export CSV</a>
+                </div>
+            </div>
+
+            <div class="settings-option">
+                <div class="option-info">
+                    <div class="option-title">Backup Data</div>
+                    <div class="option-description">Create a backup of your data</div>
+                </div>
+                <div class="option-action">
+                    <button class="settings-btn" onclick="backupData()">💾 Backup</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="settings-section">
+            <h3>📱 App Information</h3>
+
+            <div class="settings-option">
+                <div class="option-info">
+                    <div class="option-title">App Version</div>
+                    <div class="option-description">Current version of Expense Tracker</div>
+                </div>
+                <div class="option-action">
+                    <span style="color: #4a90e2; font-weight: bold;">v2.0.0</span>
+                </div>
+            </div>
+
+            <div class="settings-option">
+                <div class="option-info">
+                    <div class="option-title">Privacy Policy</div>
+                    <div class="option-description">View our privacy policy</div>
+                </div>
+                <div class="option-action">
+                    <button class="settings-btn" onclick="showPrivacyPolicy()">📋 View</button>
+                </div>
+            </div>
+
+            <div class="settings-option">
+                <div class="option-info">
+                    <div class="option-title">About</div>
+                    <div class="option-description">Learn more about this app</div>
+                </div>
+                <div class="option-action">
+                    <button class="settings-btn" onclick="showAbout()">ℹ️ About</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function backupData() {
+    alert('🔄 Backup functionality coming soon!\n\nYour data is automatically saved in your account and will be available across devices when you sign in.');
+}
+
+function showPrivacyPolicy() {
+    alert('🔐 Privacy Policy\n\n• Your data is stored securely in your account\n• We do not share your financial information\n• Data is encrypted and protected\n• You have full control over your data\n• You can export or delete your data anytime');
+}
+
+function showAbout() {
+    alert('💰 Expense Tracker v2.0.0\n\n• Track income and expenses\n• Generate detailed reports\n• Filter and analyze data\n• Export to CSV\n• Secure cloud storage\n• Multi-device access\n\nDeveloped with ❤️ for better financial management');
+}
+</script>
+{% endblock %}
