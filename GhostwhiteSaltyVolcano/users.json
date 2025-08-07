@@ -1,0 +1,26 @@
+{
+  "sasank@gmail.com": {
+    "username": "Sasank",
+    "phone": "9014140498",
+    "email": "sasank@gmail.com",
+    "password": "edee1f211365bac1d783f8b60a6071a96e7ffff2d34f16aa0cd68714765882d4",
+    "created_at": "2025-07-15T08:43:31.683612",
+    "verified": true
+  },
+  "vkpendela@gmail.com": {
+    "username": "vpendela",
+    "phone": "9611033911",
+    "email": "vkpendela@gmail.com",
+    "password": "0c688fd557a01731c782cd6375f2ae369ef106f67b165621796d2aee26dceb5a",
+    "created_at": "2025-07-15T11:38:31.033881",
+    "verified": true
+  },
+  "chenchukoushik@gmail.com": {
+    "username": "nani",
+    "phone": "7780660803",
+    "email": "chenchukoushik@gmail.com",
+    "password": "066b972a0091f886e243086603f14a50434020a67731ff1f69c3a425079a27c6",
+    "created_at": "2025-07-16T15:41:31.389004",
+    "verified": true
+  }
+}
