@@ -1,0 +1,717 @@
+
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+.form-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.form-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.form-row {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.form-group {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.form-group label {
+    font-weight: bold;
+    margin-bottom: 5px;
+    color: #333;
+    font-size: 14px;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    padding: 12px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    font-size: 16px;
+    transition: border-color 0.3s ease;
+    height: 44px;
+    box-sizing: border-box;
+}
+
+.form-group textarea {
+    height: auto;
+    min-height: 88px;
+    resize: vertical;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: #4a90e2;
+}
+
+.button-row {
+    display: flex;
+    gap: 15px;
+    margin-top: 30px;
+    justify-content: center;
+}
+
+.btn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-width: 120px;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #4a90e2, #357abd);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #357abd, #2968a3);
+}
+
+.btn-secondary {
+    background: linear-gradient(135deg, #6c757d, #5a6268);
+    color: white;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-secondary:hover {
+    background: linear-gradient(135deg, #5a6268, #495057);
+    text-decoration: none;
+    color: white;
+}
+
+.btn-warning {
+    background: linear-gradient(135deg, #f39c12, #e67e22);
+    color: white;
+}
+
+.btn-warning:hover {
+    background: linear-gradient(135deg, #e67e22, #d68910);
+}
+
+/* Popup styles */
+.popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+}
+
+.popup-content {
+    background: white;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    animation: popupSlideIn 0.3s ease;
+}
+
+@keyframes popupSlideIn {
+    from {
+        transform: translateY(-50px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.popup-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    border-bottom: 1px solid #eee;
+    background: #f8f9fa;
+    border-radius: 12px 12px 0 0;
+}
+
+.popup-header h3 {
+    margin: 0;
+    font-size: 18px;
+    color: #333;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #666;
+    padding: 5px;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.close-btn:hover {
+    color: #333;
+    background: #eee;
+    border-radius: 50%;
+}
+
+.popup-body {
+    padding: 20px;
+}
+
+.popup-body .form-group {
+    margin-bottom: 15px;
+}
+
+.popup-footer {
+    padding: 20px;
+    border-top: 1px solid #eee;
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+}
+
+.add-new-option {
+    background: #f39c12;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    margin-top: 10px;
+    width: 100%;
+}
+
+.add-new-option:hover {
+    background: #e67e22;
+}
+
+/* Sub-category specific styles */
+.subcategory-wrapper {
+    position: relative;
+}
+
+@media (max-width: 768px) {
+    .form-row {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .button-row {
+        flex-direction: column;
+    }
+    
+    .popup-content {
+        width: 95%;
+        margin: 20px;
+    }
+}
+</style>
+
+<div class="form-container">
+    <div class="form-header">
+        <h2>{% if record %}✏️ Edit Record{% elif default_category == "Expense" %}💸 Add Expense{% elif default_category == "Income" %}💰 Add Income{% else %}📝 Add Record{% endif %}</h2>
+    </div>
+
+    <form action="{{ url_for('submit_record') }}" method="POST" id="recordForm">
+        {% if record %}
+        <input type="hidden" name="edit_index" value="{{ edit_index }}">
+        {% endif %}
+
+        <div class="form-row">
+            <div class="form-group">
+                <label for="date">📅 Date:</label>
+                <input type="date" id="date" name="date" value="{% if record %}{{ record.Date }}{% else %}{{ today }}{% endif %}" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="category">📂 Category:</label>
+                <select id="category" name="category" required onchange="updateSubcategories()">
+                    {% if default_category and default_category == 'Expense' %}
+                    <option value="">Select Category</option>
+                    <option value="Food" {% if record and record.Category == 'Food' %}selected{% endif %}>🍔 Food</option>
+                    <option value="Rent" {% if record and record.Category == 'Rent' %}selected{% endif %}>🏠 Rent</option>
+                    <option value="Mobile Recharge" {% if record and record.Category == 'Mobile Recharge' %}selected{% endif %}>📱 Mobile Recharge</option>
+                    <option value="Health" {% if record and record.Category == 'Health' %}selected{% endif %}>💊 Health</option>
+                    <option value="Travel" {% if record and record.Category == 'Travel' %}selected{% endif %}>✈️ Travel</option>
+                    <option value="Fuel" {% if record and record.Category == 'Fuel' %}selected{% endif %}>⛽ Fuel</option>
+                    <option value="Shopping" {% if record and record.Category == 'Shopping' %}selected{% endif %}>🛍️ Shopping</option>
+                    <option value="Sport" {% if record and record.Category == 'Sport' %}selected{% endif %}>⚽ Sport</option>
+                    <option value="ADD_NEW_CATEGORY" style="background-color: #f39c12; color: white; font-weight: bold;">➕ Add New Category</option>
+                    {% else %}
+                    <option value="">Select Category</option>
+                    <option value="Income" {% if record and record.Category == 'Income' %}selected{% endif %}>💰 Income</option>
+                    <option value="Food" {% if record and record.Category == 'Food' %}selected{% endif %}>🍔 Food</option>
+                    <option value="Rent" {% if record and record.Category == 'Rent' %}selected{% endif %}>🏠 Rent</option>
+                    <option value="Mobile Recharge" {% if record and record.Category == 'Mobile Recharge' %}selected{% endif %}>📱 Mobile Recharge</option>
+                    <option value="Health" {% if record and record.Category == 'Health' %}selected{% endif %}>💊 Health</option>
+                    <option value="Travel" {% if record and record.Category == 'Travel' %}selected{% endif %}>✈️ Travel</option>
+                    <option value="Fuel" {% if record and record.Category == 'Fuel' %}selected{% endif %}>⛽ Fuel</option>
+                    <option value="Shopping" {% if record and record.Category == 'Shopping' %}selected{% endif %}>🛍️ Shopping</option>
+                    <option value="Sport" {% if record and record.Category == 'Sport' %}selected{% endif %}>⚽ Sport</option>
+                    {% endif %}
+                </select>
+            </div>
+
+            <div class="form-group subcategory-wrapper">
+                <label for="subcategory">🏷️ Sub-Category:</label>
+                <select id="subcategory" name="subcategory" required onchange="handleSubcategorySelection()">
+                    <option value="">Select Sub-Category</option>
+                </select>
+                <button type="button" class="add-new-option" id="addSubcategoryBtn" onclick="showAddSubcategoryPopup()" style="display: none;">
+                    ➕ Add New Sub-category
+                </button>
+            </div>
+            
+            <div class="form-group">
+                <label for="amount">💵 Amount:</label>
+                <input type="number" id="amount" name="amount" step="0.01" min="0" placeholder="Enter Amount" value="{% if record %}{{ record.Amount }}{% endif %}" required>
+            </div>
+
+            <div class="form-group">
+                <label for="remarks">📝 Remarks:</label>
+                <textarea id="remarks" name="remarks" placeholder="Enter Remarks">{% if record %}{{ record.Remarks }}{% endif %}</textarea>
+            </div>
+        </div>
+
+        <div class="button-row">
+            <button type="submit" class="btn btn-primary">
+                {% if record %}✅ Update{% else %}💾 Save{% endif %}
+            </button>
+            <button type="button" class="btn btn-warning" onclick="clearForm()">🗑️ Clear</button>
+            {% if record %}
+                <a href="{{ url_for('manage_records', category='Expense') }}" class="btn btn-secondary">🔙 Back to Previous Page</a>
+            {% elif default_category %}
+                <a href="{{ url_for('expense_dashboard' if default_category == 'Expense' else 'income_dashboard') }}" class="btn btn-secondary">🔙 Back</a>
+            {% else %}
+                <a href="{{ url_for('home') }}" class="btn btn-secondary">🏠 Back to Home</a>
+            {% endif %}
+        </div>
+    </form>
+</div>
+
+<!-- Add Category Popup -->
+<div id="addCategoryPopup" class="popup-overlay">
+    <div class="popup-content">
+        <div class="popup-header">
+            <h3>➕ Add New Category</h3>
+            <button type="button" class="close-btn" onclick="closeAddCategoryPopup()">&times;</button>
+        </div>
+        <div class="popup-body">
+            <div class="form-group">
+                <label for="newCategoryName">Category Name:</label>
+                <input type="text" id="newCategoryName" placeholder="Enter category name" required>
+            </div>
+            <div class="form-group">
+                <label for="newCategorySubcategory">Sub-Category Name:</label>
+                <input type="text" id="newCategorySubcategory" placeholder="Enter sub-category name" required>
+            </div>
+            <div class="form-group">
+                <label for="newCategoryIcon">Icon:</label>
+                <select id="newCategoryIcon">
+                    <option value="🍔">🍔 Food</option>
+                    <option value="🏠">🏠 House</option>
+                    <option value="📱">📱 Phone</option>
+                    <option value="💊">💊 Health</option>
+                    <option value="✈️">✈️ Travel</option>
+                    <option value="⛽">⛽ Fuel</option>
+                    <option value="🛍️">🛍️ Shopping</option>
+                    <option value="⚽">⚽ Sports</option>
+                    <option value="🎯">🎯 Target</option>
+                    <option value="🎵">🎵 Music</option>
+                    <option value="📚">📚 Education</option>
+                    <option value="🎮">🎮 Gaming</option>
+                    <option value="🎨">🎨 Art</option>
+                    <option value="🚗">🚗 Car</option>
+                    <option value="💼">💼 Business</option>
+                </select>
+            </div>
+        </div>
+        <div class="popup-footer">
+            <button type="button" class="btn btn-primary" onclick="addNewCategory()">Add Category</button>
+            <button type="button" class="btn btn-warning" onclick="clearCategoryForm()">Clear</button>
+            <button type="button" class="btn btn-secondary" onclick="closeAddCategoryPopup()">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<!-- Add Sub-category Popup -->
+<div id="addSubcategoryPopup" class="popup-overlay">
+    <div class="popup-content">
+        <div class="popup-header">
+            <h3>➕ Add New Sub-category</h3>
+            <button type="button" class="close-btn" onclick="closeAddSubcategoryPopup()">&times;</button>
+        </div>
+        <div class="popup-body">
+            <div class="form-group">
+                <label>Category:</label>
+                <input type="text" id="currentCategoryName" readonly>
+            </div>
+            <div class="form-group">
+                <label for="newSubcategoryName">Sub-Category Name:</label>
+                <input type="text" id="newSubcategoryName" placeholder="Enter sub-category name" required>
+            </div>
+            <div class="form-group">
+                <label for="newSubcategoryIcon">Icon:</label>
+                <select id="newSubcategoryIcon">
+                    <option value="🍽️">🍽️ Restaurant</option>
+                    <option value="🍕">🍕 Fast Food</option>
+                    <option value="🛒">🛒 Groceries</option>
+                    <option value="🍜">🍜 Street Food</option>
+                    <option value="☕">☕ Beverages</option>
+                    <option value="🍿">🍿 Snacks</option>
+                    <option value="🏠">🏠 1-bedroom</option>
+                    <option value="🏡">🏡 2-bedroom</option>
+                    <option value="🏘️">🏘️ 3-bedroom</option>
+                    <option value="🏢">🏢 PG</option>
+                    <option value="🏪">🏪 Shop</option>
+                    <option value="🏬">🏬 Office</option>
+                    <option value="📞">📞 Prepaid</option>
+                    <option value="📱">📱 Postpaid</option>
+                    <option value="📶">📶 Data Pack</option>
+                    <option value="🌍">🌍 International</option>
+                    <option value="👩‍⚕️">👩‍⚕️ Doctor</option>
+                    <option value="💊">💊 Medicine</option>
+                    <option value="🏥">🏥 Hospital</option>
+                    <option value="🦷">🦷 Dental</option>
+                    <option value="👁️">👁️ Eye Care</option>
+                    <option value="🏋️">🏋️ Gym</option>
+                    <option value="✈️">✈️ Flight</option>
+                    <option value="🚂">🚂 Train</option>
+                    <option value="🚌">🚌 Bus</option>
+                    <option value="🚕">🚕 Taxi</option>
+                    <option value="🛺">🛺 Auto</option>
+                    <option value="🏨">🏨 Hotel</option>
+                    <option value="⛽">⛽ Petrol</option>
+                    <option value="🚛">🚛 Diesel</option>
+                    <option value="🚗">🚗 CNG</option>
+                    <option value="🔌">🔌 Electric</option>
+                    <option value="👕">👕 Clothes</option>
+                    <option value="📱">📱 Electronics</option>
+                    <option value="🏠">🏠 Home Items</option>
+                    <option value="📚">📚 Books</option>
+                    <option value="🎁">🎁 Gifts</option>
+                    <option value="🛒">🛒 Online</option>
+                    <option value="🏏">🏏 Cricket</option>
+                    <option value="⚽">⚽ Football</option>
+                    <option value="🏸">🏸 Badminton</option>
+                    <option value="🎾">🎾 Tennis</option>
+                    <option value="🏊">🏊 Swimming</option>
+                    <option value="🏋️">🏋️ Equipment</option>
+                </select>
+            </div>
+        </div>
+        <div class="popup-footer">
+            <button type="button" class="btn btn-primary" onclick="addNewSubcategory()">Add Sub-category</button>
+            <button type="button" class="btn btn-warning" onclick="clearSubcategoryForm()">Clear</button>
+            <button type="button" class="btn btn-secondary" onclick="closeAddSubcategoryPopup()">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<script>
+// Define subcategories for each category
+const categorySubcategories = {
+    'Income': [
+        { name: 'Salary', icon: '💰' },
+        { name: 'Cash', icon: '💵' }
+    ],
+    'Food': [
+        { name: 'Restaurant', icon: '🍽️' },
+        { name: 'Fast Food', icon: '🍕' },
+        { name: 'Groceries', icon: '🛒' },
+        { name: 'Street Food', icon: '🍜' },
+        { name: 'Beverages', icon: '☕' },
+        { name: 'Snacks', icon: '🍿' }
+    ],
+    'Rent': [
+        { name: '1-bed room flat', icon: '🏠' },
+        { name: '2-bed room flat', icon: '🏡' },
+        { name: '3-bed room flat', icon: '🏘️' },
+        { name: 'PG', icon: '🏢' },
+        { name: 'Shop', icon: '🏪' },
+        { name: 'Office Space', icon: '🏬' }
+    ],
+    'Mobile Recharge': [
+        { name: 'Prepaid', icon: '📞' },
+        { name: 'Postpaid', icon: '📱' },
+        { name: 'Data Pack', icon: '📶' },
+        { name: 'International', icon: '🌍' }
+    ],
+    'Health': [
+        { name: 'Doctor Visit', icon: '👩‍⚕️' },
+        { name: 'Medicines', icon: '💊' },
+        { name: 'Hospital', icon: '🏥' },
+        { name: 'Dental', icon: '🦷' },
+        { name: 'Eye Care', icon: '👁️' },
+        { name: 'Gym', icon: '🏋️' }
+    ],
+    'Travel': [
+        { name: 'Flight', icon: '✈️' },
+        { name: 'Train', icon: '🚂' },
+        { name: 'Bus', icon: '🚌' },
+        { name: 'Taxi/Uber', icon: '🚕' },
+        { name: 'Auto', icon: '🛺' },
+        { name: 'Hotel', icon: '🏨' }
+    ],
+    'Fuel': [
+        { name: 'Petrol', icon: '⛽' },
+        { name: 'Diesel', icon: '🚛' },
+        { name: 'CNG', icon: '🚗' },
+        { name: 'Electric Charging', icon: '🔌' }
+    ],
+    'Shopping': [
+        { name: 'Clothes', icon: '👕' },
+        { name: 'Electronics', icon: '📱' },
+        { name: 'Home Items', icon: '🏠' },
+        { name: 'Books', icon: '📚' },
+        { name: 'Gifts', icon: '🎁' },
+        { name: 'Online Shopping', icon: '🛒' }
+    ],
+    'Sport': [
+        { name: 'Cricket', icon: '🏏' },
+        { name: 'Football', icon: '⚽' },
+        { name: 'Badminton', icon: '🏸' },
+        { name: 'Tennis', icon: '🎾' },
+        { name: 'Swimming', icon: '🏊' },
+        { name: 'Gym Equipment', icon: '🏋️' }
+    ]
+};
+
+function updateSubcategories() {
+    const category = document.getElementById('category').value;
+    const subcategorySelect = document.getElementById('subcategory');
+    const addSubcategoryBtn = document.getElementById('addSubcategoryBtn');
+    
+    // Check if "Add New Category" was selected
+    if (category === 'ADD_NEW_CATEGORY') {
+        showAddCategoryPopup();
+        // Reset to empty selection
+        document.getElementById('category').value = '';
+        return;
+    }
+    
+    // Clear existing options
+    subcategorySelect.innerHTML = '<option value="">Select Sub-Category</option>';
+    
+    if (category && categorySubcategories[category]) {
+        categorySubcategories[category].forEach(subcat => {
+            const option = document.createElement('option');
+            option.value = subcat.name;
+            option.textContent = `${subcat.icon} ${subcat.name}`;
+            subcategorySelect.appendChild(option);
+        });
+        
+        // Add "Add New Sub-category" option for expense categories
+        if (category !== 'Income') {
+            const addOption = document.createElement('option');
+            addOption.value = 'ADD_NEW_SUBCATEGORY';
+            addOption.textContent = '➕ Add New Sub-category';
+            addOption.style.backgroundColor = '#f39c12';
+            addOption.style.color = 'white';
+            addOption.style.fontWeight = 'bold';
+            subcategorySelect.appendChild(addOption);
+        }
+        
+        addSubcategoryBtn.style.display = 'none';
+    } else {
+        addSubcategoryBtn.style.display = 'none';
+    }
+    
+    {% if record %}
+    // Set selected value if editing a record
+    const recordSubcategory = '{{ record["Sub-Category"] if record else "" }}';
+    if (recordSubcategory) {
+        subcategorySelect.value = recordSubcategory;
+    }
+    {% endif %}
+}
+
+function showAddCategoryPopup() {
+    document.getElementById('addCategoryPopup').style.display = 'flex';
+}
+
+function closeAddCategoryPopup() {
+    document.getElementById('addCategoryPopup').style.display = 'none';
+    clearCategoryForm();
+}
+
+function showAddSubcategoryPopup() {
+    const category = document.getElementById('category').value;
+    if (!category) {
+        alert('Please select a category first!');
+        return;
+    }
+    
+    document.getElementById('currentCategoryName').value = category;
+    document.getElementById('addSubcategoryPopup').style.display = 'flex';
+}
+
+function closeAddSubcategoryPopup() {
+    document.getElementById('addSubcategoryPopup').style.display = 'none';
+    clearSubcategoryForm();
+}
+
+function clearCategoryForm() {
+    document.getElementById('newCategoryName').value = '';
+    document.getElementById('newCategorySubcategory').value = '';
+    document.getElementById('newCategoryIcon').value = '🍔';
+}
+
+function clearSubcategoryForm() {
+    document.getElementById('newSubcategoryName').value = '';
+    document.getElementById('newSubcategoryIcon').value = '🍽️';
+}
+
+function addNewCategory() {
+    const categoryName = document.getElementById('newCategoryName').value.trim();
+    const subcategoryName = document.getElementById('newCategorySubcategory').value.trim();
+    const categoryIcon = document.getElementById('newCategoryIcon').value;
+    
+    if (!categoryName || !subcategoryName) {
+        alert('Please enter both category name and sub-category name');
+        return;
+    }
+    
+    // Add to local data
+    if (!categorySubcategories[categoryName]) {
+        categorySubcategories[categoryName] = [];
+    }
+    if (!categorySubcategories[categoryName].find(sub => sub.name === subcategoryName)) {
+        categorySubcategories[categoryName].push({
+            name: subcategoryName,
+            icon: categoryIcon
+        });
+    }
+    
+    // Add to category dropdown if not exists
+    const categorySelect = document.getElementById('category');
+    let categoryExists = false;
+    for (let option of categorySelect.options) {
+        if (option.value === categoryName) {
+            categoryExists = true;
+            break;
+        }
+    }
+    
+    if (!categoryExists) {
+        const option = document.createElement('option');
+        option.value = categoryName;
+        option.textContent = `${categoryIcon} ${categoryName}`;
+        categorySelect.appendChild(option);
+    }
+    
+    // Select the new category and update subcategories
+    categorySelect.value = categoryName;
+    updateSubcategories();
+    
+    // Select the new subcategory
+    document.getElementById('subcategory').value = subcategoryName;
+    
+    // Close popup and clear form
+    closeAddCategoryPopup();
+    
+    alert(`Category "${categoryName}" with sub-category "${subcategoryName}" has been added!`);
+}
+
+function addNewSubcategory() {
+    const categoryName = document.getElementById('currentCategoryName').value;
+    const subcategoryName = document.getElementById('newSubcategoryName').value.trim();
+    const subcategoryIcon = document.getElementById('newSubcategoryIcon').value;
+    
+    if (!subcategoryName) {
+        alert('Please enter sub-category name');
+        return;
+    }
+    
+    // Add to local data
+    if (!categorySubcategories[categoryName]) {
+        categorySubcategories[categoryName] = [];
+    }
+    
+    if (!categorySubcategories[categoryName].find(sub => sub.name === subcategoryName)) {
+        categorySubcategories[categoryName].push({
+            name: subcategoryName,
+            icon: subcategoryIcon
+        });
+        
+        // Update subcategories dropdown
+        updateSubcategories();
+        
+        // Select the new subcategory
+        document.getElementById('subcategory').value = subcategoryName;
+        
+        // Close popup
+        closeAddSubcategoryPopup();
+        
+        alert(`Sub-category "${subcategoryName}" has been added to ${categoryName}!`);
+    } else {
+        alert('This sub-category already exists!');
+    }
+}
+
+function clearForm() {
+    if (confirm('Are you sure you want to clear all fields?')) {
+        document.getElementById('recordForm').reset();
+        document.getElementById('date').value = '{{ today }}';
+        updateSubcategories();
+    }
+}
+
+// Close popups when clicking outside
+window.onclick = function(event) {
+    const categoryPopup = document.getElementById('addCategoryPopup');
+    const subcategoryPopup = document.getElementById('addSubcategoryPopup');
+    
+    if (event.target === categoryPopup) {
+        closeAddCategoryPopup();
+    }
+    if (event.target === subcategoryPopup) {
+        closeAddSubcategoryPopup();
+    }
+}
+
+function handleSubcategorySelection() {
+    const subcategory = document.getElementById('subcategory').value;
+    
+    if (subcategory === 'ADD_NEW_SUBCATEGORY') {
+        showAddSubcategoryPopup();
+        // Reset to empty selection
+        document.getElementById('subcategory').value = '';
+    }
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    {% if default_category or record %}
+    updateSubcategories();
+    {% endif %}
+});
+</script>
+{% endblock %}

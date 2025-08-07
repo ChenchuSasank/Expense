@@ -1,0 +1,363 @@
+
+{% extends "base.html" %}
+
+{% block content %}
+<div class="card">
+    <h2>📊 Show Data</h2>
+
+    <!-- Filter Section -->
+    <div class="filter-section" style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
+        <form method="GET" id="filter-form">
+            <div class="filter-row" style="display: flex; gap: 15px; margin-bottom: 15px; align-items: end; flex-wrap: wrap;">
+                <!-- Category Selection -->
+                <div class="filter-group" style="flex: 1; min-width: 200px;">
+                    <label for="category_selection" style="font-weight: bold; display: block; margin-bottom: 5px;">📂 Category:</label>
+                    <select name="category_type" id="category_selection" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ddd; font-size: 14px;" onchange="updateSubcategoryFilter()">
+                        <option value="">Select Category</option>
+                        <option value="Food" {{ 'selected' if category_filter == 'Food' }}>🍔 Food</option>
+                        <option value="Rent" {{ 'selected' if category_filter == 'Rent' }}>🏠 Rent</option>
+                        <option value="Mobile Recharge" {{ 'selected' if category_filter == 'Mobile Recharge' }}>📱 Mobile Recharge</option>
+                        <option value="Health" {{ 'selected' if category_filter == 'Health' }}>💊 Health</option>
+                        <option value="Travel" {{ 'selected' if category_filter == 'Travel' }}>✈️ Travel</option>
+                        <option value="Fuel" {{ 'selected' if category_filter == 'Fuel' }}>⛽ Fuel</option>
+                        <option value="Shopping" {{ 'selected' if category_filter == 'Shopping' }}>🛍️ Shopping</option>
+                        <option value="Sport" {{ 'selected' if category_filter == 'Sport' }}>⚽ Sport</option>
+                    </select>
+                </div>
+
+                <!-- Sub-Category Selection -->
+                <div class="filter-group" style="flex: 1; min-width: 200px;">
+                    <label for="subcategory_filter" style="font-weight: bold; display: block; margin-bottom: 5px;">🏷️ Sub-Category:</label>
+                    <select name="subcategory_filter" id="subcategory_filter" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ddd; font-size: 14px;">
+                        <option value="">Select Sub-Category</option>
+                    </select>
+                </div>
+
+                <!-- Year Selection -->
+                <div class="filter-group" style="flex: 1; min-width: 120px;">
+                    <label for="filter_year" style="font-weight: bold; display: block; margin-bottom: 5px;">📅 Year (Optional):</label>
+                    <select name="filter_year" id="filter_year" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ddd; font-size: 14px;" onchange="updateDayOptions()">
+                        <option value="">All Years</option>
+                        {% for year in range(2025, 2009, -1) %}
+                        <option value="{{ year }}" {{ 'selected' if request.args.get('filter_year') == year|string }}>{{ year }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Month Selection -->
+                <div class="filter-group" id="month-group" style="flex: 1; min-width: 120px;">
+                    <label for="filter_month" style="font-weight: bold; display: block; margin-bottom: 5px;">📅 Month (Optional):</label>
+                    <select name="filter_month" id="filter_month" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ddd; font-size: 14px;" onchange="updateDayOptions()">
+                        <option value="">All Months</option>
+                        <option value="1" {{ 'selected' if request.args.get('filter_month') == '1' }}>January</option>
+                        <option value="2" {{ 'selected' if request.args.get('filter_month') == '2' }}>February</option>
+                        <option value="3" {{ 'selected' if request.args.get('filter_month') == '3' }}>March</option>
+                        <option value="4" {{ 'selected' if request.args.get('filter_month') == '4' }}>April</option>
+                        <option value="5" {{ 'selected' if request.args.get('filter_month') == '5' }}>May</option>
+                        <option value="6" {{ 'selected' if request.args.get('filter_month') == '6' }}>June</option>
+                        <option value="7" {{ 'selected' if request.args.get('filter_month') == '7' }}>July</option>
+                        <option value="8" {{ 'selected' if request.args.get('filter_month') == '8' }}>August</option>
+                        <option value="9" {{ 'selected' if request.args.get('filter_month') == '9' }}>September</option>
+                        <option value="10" {{ 'selected' if request.args.get('filter_month') == '10' }}>October</option>
+                        <option value="11" {{ 'selected' if request.args.get('filter_month') == '11' }}>November</option>
+                        <option value="12" {{ 'selected' if request.args.get('filter_month') == '12' }}>December</option>
+                    </select>
+                </div>
+
+                <!-- Day Selection -->
+                <div class="filter-group" id="day-group" style="flex: 1; min-width: 120px;">
+                    <label for="filter_day" style="font-weight: bold; display: block; margin-bottom: 5px;">📅 Day (Optional):</label>
+                    <select name="filter_day" id="filter_day" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ddd; font-size: 14px;">
+                        <option value="">All Days</option>
+                        {% for day in range(1, 32) %}
+                        <option value="{{ day }}" {{ 'selected' if request.args.get('filter_day') == day|string }}>{{ day }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="button-row" style="display: flex; gap: 10px; justify-content: center;">
+                <button type="submit" class="btn" style="padding: 10px 20px; min-width: 150px; background: #4a90e2; color: white; border: none; border-radius: 8px; cursor: pointer;">🔍 Filter</button>
+                <a href="{{ url_for('show_data') }}" class="btn" style="background: #95a5a6; padding: 10px 20px; min-width: 150px; color: white; text-decoration: none; text-align: center; border-radius: 8px; display: inline-block;">🔄 Clear</a>
+                <a href="{{ url_for('expense_dashboard') }}" class="btn" style="background: #6c757d; padding: 10px 20px; min-width: 150px; color: white; text-decoration: none; text-align: center; border-radius: 8px; display: inline-block;">🔙 Back</a>
+            </div>
+        </form>
+    </div>
+
+    {% if records %}
+    <!-- Expense Records Section -->
+    {% set expense_records = indexed_records | selectattr('0.Category', 'ne', 'Income') | list %}
+    {% if expense_records %}
+    <div class="records-section" style="margin-bottom: 30px;">
+        <h3 style="color: #e74c3c; margin-bottom: 15px; padding: 10px; background: #fff5f5; border-radius: 8px; border-left: 4px solid #e74c3c;">💸 Expense Records</h3>
+        <div class="table-responsive" style="margin-bottom: 20px;">
+            <table class="table">
+                <thead style="background: #fff5f5;">
+                    <tr>
+                        <th>Date</th>
+                        <th>Category</th>
+                        <th>Sub-Category</th>
+                        <th>Amount</th>
+                        <th>Remarks</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for record, original_index in expense_records %}
+                    <tr>
+                        <td style="font-weight: bold;">{{ record.Date.split('-')[2] }}-{{ record.Date.split('-')[1] }}-{{ record.Date.split('-')[0] }}</td>
+                        <td>
+                            {% if record.Category == 'Food' %}
+                                <span style="color: #FF9999;">🍔 {{ record.Category }}</span>
+                            {% elif record.Category == 'Rent' %}
+                                <span style="color: #FFB266;">🏠 {{ record.Category }}</span>
+                            {% elif record.Category == 'Mobile Recharge' %}
+                                <span style="color: #FFFF99;">📱 {{ record.Category }}</span>
+                            {% elif record.Category == 'Health' %}
+                                <span style="color: #99FF99;">💊 {{ record.Category }}</span>
+                            {% elif record.Category == 'Travel' %}
+                                <span style="color: #99CCFF;">✈️ {{ record.Category }}</span>
+                            {% elif record.Category == 'Fuel' %}
+                                <span style="color: #CC99FF;">⛽ {{ record.Category }}</span>
+                            {% elif record.Category == 'Shopping' %}
+                                <span style="color: #FF66B2;">🛍️ {{ record.Category }}</span>
+                            {% elif record.Category == 'Sport' %}
+                                <span style="color: #FFD700;">⚽ {{ record.Category }}</span>
+                            {% else %}
+                                <span style="color: #B2B2B2;">❓ {{ record.Category }}</span>
+                            {% endif %}
+                        </td>
+                        <td style="color: #e74c3c;">{{ record['Sub-Category'] }}</td>
+                        <td style="font-weight: bold; color: #e74c3c;">₹{{ record.Amount }}</td>
+                        <td>{{ record.Remarks or '-' }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Income Records Section -->
+    {% set income_records = indexed_records | selectattr('0.Category', 'eq', 'Income') | list %}
+    {% if income_records %}
+    <div class="records-section" style="margin-bottom: 30px;">
+        <h3 style="color: #66BB6A; margin-bottom: 15px; padding: 10px; background: #f1f8e9; border-radius: 8px; border-left: 4px solid #66BB6A;">💰 Income Records</h3>
+        <div class="table-responsive" style="margin-bottom: 20px;">
+            <table class="table">
+                <thead style="background: #f1f8e9;">
+                    <tr>
+                        <th>Date</th>
+                        <th>Category</th>
+                        <th>Sub-Category</th>
+                        <th>Amount</th>
+                        <th>Remarks</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for record, original_index in income_records %}
+                    <tr>
+                        <td style="font-weight: bold;">{{ record.Date.split('-')[2] }}-{{ record.Date.split('-')[1] }}-{{ record.Date.split('-')[0] }}</td>
+                        <td>
+                            <span style="color: #66BB6A;">💰 {{ record.Category }}</span>
+                        </td>
+                        <td style="color: #66BB6A;">{{ record['Sub-Category'] }}</td>
+                        <td style="font-weight: bold; color: #66BB6A;">₹{{ record.Amount }}</td>
+                        <td>{{ record.Remarks or '-' }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Summary Section -->
+    <div class="summary-section" style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-top: 20px;">
+        <h4 style="margin: 0 0 15px 0; color: #333;">📈 Summary</h4>
+        
+        {% set expense_records = indexed_records | selectattr('0.Category', 'ne', 'Income') | list %}
+        {% set income_records = indexed_records | selectattr('0.Category', 'eq', 'Income') | list %}
+        
+        <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+            <div style="flex: 1; min-width: 200px;">
+                <p style="margin: 5px 0; color: #e74c3c; font-weight: bold;">
+                    💸 <strong>Expense Records:</strong> {{ expense_records|length }}
+                </p>
+                {% if expense_records %}
+                {% set expense_total = expense_records | map(attribute='0.Amount') | map('float') | sum %}
+                <p style="margin: 5px 0; color: #e74c3c; font-weight: bold;">
+                    <strong>Total Expense:</strong> ₹{{ "%.2f"|format(expense_total) }}
+                </p>
+                {% endif %}
+            </div>
+            
+            <div style="flex: 1; min-width: 200px;">
+                <p style="margin: 5px 0; color: #66BB6A; font-weight: bold;">
+                    💰 <strong>Income Records:</strong> {{ income_records|length }}
+                </p>
+                {% if income_records %}
+                {% set income_total = income_records | map(attribute='0.Amount') | map('float') | sum %}
+                <p style="margin: 5px 0; color: #66BB6A; font-weight: bold;">
+                    <strong>Total Income:</strong> ₹{{ "%.2f"|format(income_total) }}
+                </p>
+                {% endif %}
+            </div>
+        </div>
+        
+        {% if category_filter or subcategory_filter %}
+        <p style="margin: 10px 0 0 0; color: #666; font-size: 14px;">
+            {% if category_filter %}
+            <strong>Filtered by Category:</strong> {{ category_filter }}
+            {% endif %}
+            {% if subcategory_filter %}
+            | <strong>Sub-Category:</strong> {{ subcategory_filter }}
+            {% endif %}
+        </p>
+        {% endif %}
+    </div>
+
+    {% else %}
+    <p style="text-align: center; color: #666; padding: 40px;">
+        {% if category_filter %}
+            No records found for {{ category_filter }}.
+        {% else %}
+            No records found. Please adjust your filters or add some expense records.
+        {% endif %}
+    </p>
+    {% endif %}
+</div>
+
+<style>
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.table th,
+.table td {
+    border: 1px solid #ddd;
+    text-align: left;
+    padding: 12px;
+}
+
+.table th {
+    background-color: #f8f9fa;
+    font-weight: bold;
+}
+
+.table tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+.table tr:hover {
+    background-color: #f5f5f5;
+}
+
+.table-responsive {
+    overflow-x: auto;
+}
+
+.btn:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+}
+
+@media (max-width: 768px) {
+    .filter-row {
+        flex-direction: column !important;
+    }
+
+    .button-row {
+        flex-direction: column !important;
+    }
+
+    .table th,
+    .table td {
+        padding: 8px 6px !important;
+        font-size: 14px;
+    }
+}
+</style>
+
+<script>
+    // Define subcategories for each category
+    const categorySubcategories = {
+        'Food': ['Restaurant', 'Fast Food', 'Groceries', 'Street Food', 'Beverages', 'Snacks'],
+        'Rent': ['1-bed room flat', '2-bed room flat', '3-bed room flat', 'PG', 'Shop', 'Office Space'],
+        'Mobile Recharge': ['Prepaid', 'Postpaid', 'Data Pack', 'International'],
+        'Health': ['Doctor Visit', 'Medicines', 'Hospital', 'Dental', 'Eye Care', 'Gym'],
+        'Travel': ['Flight', 'Train', 'Bus', 'Taxi/Uber', 'Auto', 'Hotel'],
+        'Fuel': ['Petrol', 'Diesel', 'CNG', 'Electric Charging'],
+        'Shopping': ['Clothes', 'Electronics', 'Home Items', 'Books', 'Gifts', 'Online Shopping'],
+        'Sport': ['Cricket', 'Football', 'Badminton', 'Tennis', 'Swimming', 'Gym Equipment']
+    };
+
+    function updateSubcategoryFilter() {
+        const categorySelect = document.getElementById('category_selection');
+        const subcategorySelect = document.getElementById('subcategory_filter');
+        const selectedCategory = categorySelect.value;
+
+        // Clear existing options
+        subcategorySelect.innerHTML = '<option value="">Select Sub-Category</option>';
+
+        if (selectedCategory && categorySubcategories[selectedCategory]) {
+            categorySubcategories[selectedCategory].forEach(subcat => {
+                const option = document.createElement('option');
+                option.value = subcat;
+                option.textContent = subcat;
+                if (subcat === '{{ subcategory_filter }}') {
+                    option.selected = true;
+                }
+                subcategorySelect.appendChild(option);
+            });
+        }
+    }
+
+    function updateDayOptions() {
+        const monthSelect = document.getElementById('filter_month');
+        const yearSelect = document.getElementById('filter_year');
+        const daySelect = document.getElementById('filter_day');
+        
+        const selectedMonth = parseInt(monthSelect.value);
+        const selectedYear = parseInt(yearSelect.value) || new Date().getFullYear();
+        
+        // Clear existing day options
+        daySelect.innerHTML = '<option value="">All Days</option>';
+        
+        if (selectedMonth) {
+            let daysInMonth;
+            
+            // Calculate days in month
+            if (selectedMonth === 2) {
+                // February - check for leap year
+                daysInMonth = (selectedYear % 4 === 0 && (selectedYear % 100 !== 0 || selectedYear % 400 === 0)) ? 29 : 28;
+            } else if ([4, 6, 9, 11].includes(selectedMonth)) {
+                // April, June, September, November
+                daysInMonth = 30;
+            } else {
+                // January, March, May, July, August, October, December
+                daysInMonth = 31;
+            }
+            
+            // Add day options
+            for (let day = 1; day <= daysInMonth; day++) {
+                const option = document.createElement('option');
+                option.value = day;
+                option.textContent = day;
+                if (day === parseInt('{{ request.args.get("filter_day") or "" }}')) {
+                    option.selected = true;
+                }
+                daySelect.appendChild(option);
+            }
+        }
+    }
+
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        updateSubcategoryFilter();
+        updateDayOptions();
+    });
+</script>
+{% endblock %}

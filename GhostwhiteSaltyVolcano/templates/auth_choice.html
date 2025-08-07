@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Choose Authentication - Expense Tracker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .auth-container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            max-width: 500px;
+            width: 100%;
+        }
+
+        .logo {
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2rem;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1rem;
+        }
+
+        .auth-option {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .auth-option:hover {
+            border-color: #4a90e2;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(74, 144, 226, 0.2);
+        }
+
+        .auth-option h3 {
+            color: #4a90e2;
+            margin-bottom: 10px;
+        }
+
+        .auth-option p {
+            color: #666;
+            margin-bottom: 15px;
+        }
+
+        .auth-btn {
+            background: #4a90e2;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .auth-btn:hover {
+            background: #357abd;
+        }
+
+        .auth-btn.secondary {
+            background: #6c757d;
+        }
+
+        .auth-btn.secondary:hover {
+            background: #5a6268;
+        }
+
+        .privacy-note {
+            background: #e8f5e8;
+            border: 1px solid #c8e6c9;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+            color: #2e7d32;
+            font-size: 0.9rem;
+        }
+
+        .back-link {
+            margin-top: 20px;
+        }
+
+        .back-link a {
+            color: #4a90e2;
+            text-decoration: none;
+        }
+
+        .back-link a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 480px) {
+            .auth-container {
+                padding: 30px 20px;
+            }
+
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            .logo {
+                font-size: 3rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-container">
+        <div class="logo">💰</div>
+        <h1>Welcome to Expense Tracker</h1>
+        <p class="subtitle">Choose how you'd like to access your personal account</p>
+
+        <div class="privacy-note">
+            🔒 <strong>Privacy Guaranteed:</strong> Each user gets a completely separate and private account. Your financial data is never shared or mixed with other users.
+        </div>
+
+        <div class="auth-option" onclick="window.location.href='{{ url_for('signup') }}'">
+            <h3>🆕 Create New Account</h3>
+            <p>First time user? Create your personal expense tracking account</p>
+            <a href="{{ url_for('signup') }}" class="auth-btn">Sign Up</a>
+        </div>
+
+        <div class="auth-option" onclick="window.location.href='{{ url_for('signin') }}'">
+            <h3>🔐 Sign In</h3>
+            <p>Already have an account? Sign in to access your data</p>
+            <a href="{{ url_for('signin') }}" class="auth-btn secondary">Sign In</a>
+        </div>
+
+        <div style="background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 8px; padding: 15px; margin: 20px 0; color: #856404;">
+            <strong>💡 Shared this link?</strong><br>
+            The person you shared this with will create their own separate account. Your data remains completely private!
+        </div>
+
+        <div class="back-link">
+            <a href="{{ url_for('get_started') }}">← Back to Home</a>
+        </div>
+    </div>
+</body>
+</html>

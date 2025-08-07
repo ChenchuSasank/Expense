@@ -1,0 +1,21 @@
+In Home page there is 2 buttons one is Expense and one is Income those are working and coming to Expense Button when the user click on the Expense button then user is getting to see three buttons inside of Expense button.
+Those are Add Expense, Fetch Data, Manage Data as side-by-side and down of those button there is Back to Home button it is fine for users to use that page. And next when the user click on the Add Expense (add_record.html) the user can record the data.
+	1) In the Add Expense Button there a title as Expense and next is 5 entry boxes side-by-side those are
+		1) Date with calendar
+		2) Category with the options to select and those options are Food, Rent, Mobile Recharge, Health, Travel, Fuel, Shopping, Sport, and finally Add New Category button need to be there and when the user select Add New Category user can see the pop up window and that window need to ask 3 entry boxes and those are Category Name, Sub-Category Name, Icon with the options to select and down of these 3 entry boxes there will be 3 buttons Add Category, Clear and Cancel.
+		3) Sub-Category with the options to select and those need to visible when the user select the Category and sub-category options need to visible as related to category. And also last option need to be as button and that button need to pop up one more window with the category as Add New Sub-category.
+		4) Amount should be as numeric way only and it's mandatory to enter the data.
+		5) Remarks means user need to type the remarks of the data to visible as a message.
+And finally after entry boxes there need to be 3 buttons those are Save, Clear and Back to previous page.
+	2) In the Fetch Data Page (show_data.html) there need to be 5 entry boxes those are 
+		1) Category need to ask options where Food, Rent, ...
+		2) Sub-category need to work when the user selected category and sub-category need to ask as options and those options need to visible as related to category.
+		3) Year (optional) need to select a year from today's year to past year because we need to record the data by previous only right then the user can select the year from now to previous year.
+		4) Month (optional) need to select a month from 1 to 12.
+		5) Day (optional) need to select a day related to month because some months are in 30 days, 31 days and 29 or 28 days so related to selected month then only the user can visible the Day to select.
+And finally after entry boxes there need to 3 buttons those are Filter, Clear and Back to previous page.
+And down of those buttons user need to see the data as a table formation which the user recorded in Add Expense page it should be visible as every column should be recorded.
+	3) In Manage Data Page (manage_records.html) there need to be show the recorded data as a table formation and in every row it need to have 2 buttons one is Edit button and one is Delete button. And the table should be as like which table is giving to the user in Fetch Data Page that table only need to be show to the user.
+		1) And when the user select the Edit button from one row then user can visible the same page (add_record.html) with the recorded data where we click on edit button that data only need to show and the user can edit the data and in Edit button it need to ask after the data entered user need to click on Update button. and side of Update button there need to be one more button that button is Back to previous page.
+And user need to use every button and every button need to work in a proper way.
+And please read every word and understand in the problem and please give me in a correct way, if suppose you have any doubts means please ask me i will clarify your doubts and then move forward.

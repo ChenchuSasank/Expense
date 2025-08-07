@@ -1,0 +1,30 @@
+[
+  {
+    "Date": "2011-11-11",
+    "Category": "Income",
+    "Sub-Category": "Salary",
+    "Amount": "100000",
+    "Remarks": "Infosys"
+  },
+  {
+    "Date": "2011-11-21",
+    "Category": "Income",
+    "Sub-Category": "Salary",
+    "Amount": "10000",
+    "Remarks": ""
+  },
+  {
+    "Date": "2025-08-07",
+    "Category": "Food",
+    "Sub-Category": "Snacks",
+    "Amount": "190",
+    "Remarks": "Kurkure"
+  },
+  {
+    "Date": "2025-08-05",
+    "Category": "Rent",
+    "Sub-Category": "PG",
+    "Amount": "8000",
+    "Remarks": "Vinay Reddy Gents PG"
+  }
+]

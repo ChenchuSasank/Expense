@@ -1,0 +1,74 @@
+{
+  "Income": [
+    {
+      "name": "Allowance",
+      "icon": "\ud83d\udcb8"
+    },
+    {
+      "name": "Salary",
+      "icon": "\ud83d\udcbc"
+    },
+    {
+      "name": "Profit",
+      "icon": "\ud83d\udcc8"
+    },
+    {
+      "name": "Cash",
+      "icon": "\ud83d\udcb0"
+    },
+    {
+      "name": "Bonus",
+      "icon": "\ud83c\udf81"
+    },
+    {
+      "name": "Other Income",
+      "icon": "\u2795"
+    }
+  ],
+  "Expense": [
+    {
+      "name": "Food",
+      "icon": "\ud83c\udf54"
+    },
+    {
+      "name": "Rent",
+      "icon": "\ud83c\udfe0"
+    },
+    {
+      "name": "Mobile Recharge",
+      "icon": "\ud83d\udcf1"
+    },
+    {
+      "name": "Health",
+      "icon": "\ud83d\udc8a"
+    },
+    {
+      "name": "Travel",
+      "icon": "\u2708\ufe0f"
+    },
+    {
+      "name": "Fuel",
+      "icon": "\u26fd"
+    },
+    {
+      "name": "Shopping",
+      "icon": "\ud83d\udecd\ufe0f"
+    },
+    {
+      "name": "Sport",
+      "icon": "\u26bd"
+    },
+    {
+      "name": "Other",
+      "icon": "\u2753"
+    },
+    {
+      "name": "Investment",
+      "icon": "In"
+    },
+    {
+      "name": "Entertainment",
+      "icon": ":)"
+    }
+  ]
+}

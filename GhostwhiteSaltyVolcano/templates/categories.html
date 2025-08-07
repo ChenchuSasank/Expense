@@ -1,0 +1,909 @@
+
+{% extends "base.html" %}
+
+{% block content %}
+<div class="categories-container">
+    <!-- Left Sidebar -->
+    <div class="sidebar">
+        <!-- Income Section -->
+        <div class="category-section">
+            <h2 class="section-title income-title">💰 Income Categories</h2>
+            <div class="category-list">
+                <div class="category-item" onclick="showCategoryRecords('Salary')">
+                    <span class="icon">💼</span>
+                    <span>Salary</span>
+                </div>
+                <div class="category-item" onclick="showCategoryRecords('Cash')">
+                    <span class="icon">💰</span>
+                    <span>Cash</span>
+                </div>
+                <div class="category-item add-category-btn" onclick="showAddIncomeForm()">
+                    <span class="icon">➕</span>
+                    <span>Add Category</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Expense Section -->
+        <div class="category-section">
+            <h2 class="section-title expense-title">💸 Expense Categories</h2>
+            <div class="category-list">
+                <div class="category-item" onclick="showSubcategories('Food')">
+                    <span class="icon">🍔</span>
+                    <span>Food</span>
+                </div>
+                <div class="category-item" onclick="showSubcategories('Rent')">
+                    <span class="icon">🏠</span>
+                    <span>Rent</span>
+                </div>
+                <div class="category-item" onclick="showSubcategories('Mobile Recharge')">
+                    <span class="icon">📱</span>
+                    <span>Mobile Recharge</span>
+                </div>
+                <div class="category-item" onclick="showSubcategories('Health')">
+                    <span class="icon">💊</span>
+                    <span>Health</span>
+                </div>
+                <div class="category-item" onclick="showSubcategories('Travel')">
+                    <span class="icon">✈️</span>
+                    <span>Travel</span>
+                </div>
+                <div class="category-item" onclick="showSubcategories('Fuel')">
+                    <span class="icon">⛽</span>
+                    <span>Fuel</span>
+                </div>
+                <div class="category-item" onclick="showSubcategories('Shopping')">
+                    <span class="icon">🛍️</span>
+                    <span>Shopping</span>
+                </div>
+                <div class="category-item" onclick="showSubcategories('Sport')">
+                    <span class="icon">⚽</span>
+                    <span>Sport</span>
+                </div>
+                <div class="category-item add-category-btn" onclick="showAddExpenseForm()">
+                    <span class="icon">➕</span>
+                    <span>Add Category</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Back to Home Button -->
+        <div class="back-button-container">
+            <a href="{{ url_for('home') }}" class="back-home-btn">🏠 Back to Home</a>
+        </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="main-content">
+        <!-- Default Welcome Message -->
+        <div id="welcome-content" class="content-panel">
+            <h2>🏷️ Categories Management</h2>
+            <p>Select a category from the left sidebar to view details or add new categories.</p>
+            <div class="info-cards">
+                <div class="info-card income-card">
+                    <h3>💰 Income Categories</h3>
+                    <p>Click on any income category to view recorded transactions for that category.</p>
+                </div>
+                <div class="info-card expense-card">
+                    <h3>💸 Expense Categories</h3>
+                    <p>Click on any expense category to view and manage sub-categories. Each category can have multiple sub-categories.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Category Records View -->
+        <div id="category-records" class="content-panel" style="display: none;">
+            <h2 id="category-records-title">Category Records</h2>
+            <div id="records-list" class="records-container">
+                <!-- Will be populated by JavaScript -->
+            </div>
+        </div>
+
+        <!-- Income Category Popup Modal -->
+        <div id="incomePopup" class="popup-overlay" style="display: none;">
+            <div class="popup-content">
+                <div class="popup-header">
+                    <h3>➕ Add Income Category</h3>
+                    <button type="button" class="close-popup" onclick="closeIncomePopup()">&times;</button>
+                </div>
+                <div class="popup-body">
+                    <form method="POST" action="{{ url_for('add_subcategory') }}">
+                        <input type="hidden" name="category_type" value="Income">
+                        <div class="form-group">
+                            <label for="income_category_name">🏷️ Category Name:</label>
+                            <input type="text" id="income_category_name" name="subcategory_name" required placeholder="Enter income category name">
+                        </div>
+                        <div class="form-group">
+                            <label for="income_category_icon">🎨 Icon (emoji):</label>
+                            <input type="text" id="income_category_icon" name="subcategory_icon" required placeholder="Enter emoji (e.g., 💼)" maxlength="2">
+                        </div>
+                        <div class="popup-footer">
+                            <button type="submit" class="btn add-btn">➕ Add Category</button>
+                            <button type="button" class="btn cancel-btn" onclick="closeIncomePopup()">❌ Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Expense Category Popup Modal -->
+        <div id="expensePopup" class="popup-overlay" style="display: none;">
+            <div class="popup-content">
+                <div class="popup-header">
+                    <h3>➕ Add Expense Category</h3>
+                    <button type="button" class="close-popup" onclick="closeExpensePopup()">&times;</button>
+                </div>
+                <div class="popup-body">
+                    <form method="POST" action="{{ url_for('add_subcategory') }}">
+                        <input type="hidden" name="category_type" value="Expense">
+                        <input type="hidden" name="parent_category" value="">
+                        <div class="form-group">
+                            <label for="expense_category_name">🏷️ Category Name:</label>
+                            <input type="text" id="expense_category_name" name="subcategory_name" required placeholder="Enter expense category name">
+                        </div>
+                        <div class="form-group">
+                            <label for="expense_subcategory">📝 Sub-Category (mandatory):</label>
+                            <input type="text" id="expense_subcategory" name="expense_subcategory" required placeholder="Enter sub-category name">
+                        </div>
+                        <div class="form-group">
+                            <label for="expense_category_icon">🎨 Icon (emoji):</label>
+                            <input type="text" id="expense_category_icon" name="subcategory_icon" required placeholder="Enter emoji (e.g., 🍔)" maxlength="2">
+                        </div>
+                        <div class="popup-footer">
+                            <button type="submit" class="btn add-btn">➕ Add Category</button>
+                            <button type="button" class="btn cancel-btn" onclick="closeExpensePopup()">❌ Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Subcategories View -->
+        <div id="subcategories-content" class="content-panel" style="display: none;">
+            <h2 id="subcategory-title">Sub-Categories</h2>
+            <div id="subcategories-grid" class="subcategory-grid">
+                <!-- Will be populated by JavaScript -->
+            </div>
+        </div>
+
+        <!-- Add Sub-Category Form for Expense -->
+        <div id="add-subcategory-form" class="content-panel" style="display: none;">
+            <h2 id="add-subcategory-title">➕ Add Sub-Category</h2>
+            <form method="POST" action="{{ url_for('add_subcategory') }}">
+                <input type="hidden" name="category_type" value="Expense">
+                <input type="hidden" id="parent_category" name="parent_category" value="">
+                <div class="form-row-inline">
+                    <div class="form-group-inline">
+                        <label for="subcategory_name">📝 Sub-Category Name:</label>
+                        <input type="text" id="subcategory_name" name="subcategory_name" required placeholder="Enter sub-category name">
+                    </div>
+                    <div class="form-group-inline">
+                        <label for="subcategory_icon">🎨 Icon (emoji):</label>
+                        <input type="text" id="subcategory_icon" name="subcategory_icon" required placeholder="Enter emoji (e.g., 🍔)" maxlength="2">
+                    </div>
+                </div>
+                <div class="button-group">
+                    <button type="submit" class="btn add-btn">➕ Add Sub-Category</button>
+                    <button type="button" class="btn clear-btn" onclick="clearSubcategoryForm()">🔄 Clear</button>
+                    <button type="button" class="btn back-btn" onclick="goBackToSubcategories()">🔙 Back</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+.categories-container {
+    display: flex;
+    min-height: 80vh;
+    gap: 20px;
+    margin: 20px 0;
+}
+
+.sidebar {
+    width: 300px;
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    height: fit-content;
+}
+
+.category-section {
+    margin-bottom: 30px;
+}
+
+.section-title {
+    text-align: center;
+    margin-bottom: 15px;
+    font-size: 1.3rem;
+    font-weight: bold;
+}
+
+.income-title {
+    color: #27ae60;
+}
+
+.expense-title {
+    color: #e74c3c;
+}
+
+.category-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.category-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px;
+    background: white;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.category-item:hover {
+    border-color: #4a90e2;
+    background: #f0f7ff;
+    transform: translateX(5px);
+}
+
+.category-item .icon {
+    font-size: 1.2rem;
+}
+
+.add-category-btn {
+    border-color: #27ae60;
+    color: #27ae60;
+    font-weight: bold;
+}
+
+.add-category-btn:hover {
+    background: #27ae60;
+    color: white;
+}
+
+.back-button-container {
+    margin-top: 20px;
+    text-align: center;
+}
+
+.back-home-btn {
+    display: inline-block;
+    padding: 12px 24px;
+    background: #6c757d;
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: bold;
+    transition: background 0.3s ease;
+}
+
+.back-home-btn:hover {
+    background: #5a6268;
+    color: white;
+    text-decoration: none;
+}
+
+.main-content {
+    flex: 1;
+    background: white;
+    border-radius: 12px;
+    padding: 30px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.content-panel h2 {
+    color: #333;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.info-cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-top: 30px;
+}
+
+.info-card {
+    padding: 20px;
+    border-radius: 12px;
+    text-align: center;
+}
+
+.income-card {
+    background: linear-gradient(135deg, #d4f4d4, #a8e6a8);
+    border-left: 4px solid #27ae60;
+}
+
+.expense-card {
+    background: linear-gradient(135deg, #f4d4d4, #e6a8a8);
+    border-left: 4px solid #e74c3c;
+}
+
+.info-card h3 {
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.records-container {
+    margin-top: 20px;
+}
+
+.record-item {
+    background: #f8f9fa;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.record-details {
+    flex: 1;
+}
+
+.record-amount {
+    font-weight: bold;
+    color: #27ae60;
+    font-size: 1.1rem;
+}
+
+.record-date {
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.record-remarks {
+    color: #888;
+    font-style: italic;
+    margin-top: 5px;
+}
+
+.no-records {
+    text-align: center;
+    color: #666;
+    padding: 40px;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.add-subcategory-section {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.add-subcategory-btn-grid {
+    border-color: #27ae60 !important;
+    background: #f0fff0 !important;
+    color: #27ae60 !important;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.add-subcategory-btn-grid:hover {
+    background: #27ae60 !important;
+    color: white !important;
+    text-decoration: none;
+}
+
+.subcategory-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.subcategory-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 15px;
+    background: #f8f9fa;
+    border: 2px solid #ddd;
+    border-radius: 12px;
+    text-decoration: none;
+    color: #333;
+    transition: all 0.3s ease;
+    text-align: center;
+}
+
+.subcategory-btn:hover {
+    border-color: #4a90e2;
+    background: #e3f2fd;
+    color: #333;
+    text-decoration: none;
+    transform: translateY(-2px);
+}
+
+.subcategory-btn .icon {
+    font-size: 2rem;
+    margin-bottom: 8px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #333;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: border-color 0.3s ease;
+}
+
+.form-group input:focus {
+    border-color: #4a90e2;
+    outline: none;
+}
+
+.form-row-inline {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.form-group-inline {
+    flex: 1;
+    min-width: 200px;
+}
+
+.form-group-inline label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #333;
+}
+
+.form-group-inline input {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: border-color 0.3s ease;
+    box-sizing: border-box;
+}
+
+.form-group-inline input:focus {
+    border-color: #4a90e2;
+    outline: none;
+}
+
+.button-group {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 30px;
+}
+
+.btn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+    transition: all 0.3s ease;
+}
+
+.add-btn {
+    background: #27ae60;
+    color: white;
+}
+
+.add-btn:hover {
+    background: #229954;
+}
+
+.clear-btn {
+    background: #95a5a6;
+    color: white;
+}
+
+.clear-btn:hover {
+    background: #7f8c8d;
+}
+
+.back-btn {
+    background: #6c757d;
+    color: white;
+}
+
+.back-btn:hover {
+    background: #5a6268;
+}
+
+/* Popup Modal Styles */
+.popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.popup-content {
+    background: white;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    animation: popupFadeIn 0.3s ease;
+}
+
+@keyframes popupFadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.popup-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    border-bottom: 1px solid #eee;
+    background: #f8f9fa;
+    border-radius: 12px 12px 0 0;
+}
+
+.popup-header h3 {
+    margin: 0;
+    color: #333;
+    font-size: 1.2rem;
+}
+
+.close-popup {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #666;
+    padding: 5px;
+    border-radius: 4px;
+    transition: background 0.3s ease;
+}
+
+.close-popup:hover {
+    background: #e9ecef;
+    color: #333;
+}
+
+.popup-body {
+    padding: 20px;
+}
+
+.popup-body .form-group {
+    margin-bottom: 20px;
+}
+
+.popup-body .form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: #333;
+    font-size: 14px;
+}
+
+.popup-body .form-group input {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    font-size: 16px;
+    transition: border-color 0.3s ease;
+    box-sizing: border-box;
+}
+
+.popup-body .form-group input:focus {
+    border-color: #4a90e2;
+    outline: none;
+}
+
+.popup-footer {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.cancel-btn {
+    background: #6c757d;
+    color: white;
+}
+
+.cancel-btn:hover {
+    background: #5a6268;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .categories-container {
+        flex-direction: column;
+    }
+    
+    .sidebar {
+        width: 100%;
+    }
+    
+    .info-cards {
+        grid-template-columns: 1fr;
+    }
+    
+    .button-group {
+        flex-direction: column;
+    }
+    
+    .form-row-inline {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .form-group-inline {
+        min-width: 100%;
+    }
+}
+</style>
+
+<script>
+// Predefined subcategories for expense categories
+const expenseSubcategories = {
+    'Food': [
+        { name: 'Restaurant', icon: '🍽️' },
+        { name: 'Fast Food', icon: '🍔' },
+        { name: 'Groceries', icon: '🛒' },
+        { name: 'Street Food', icon: '🌮' },
+        { name: 'Beverages', icon: '🥤' },
+        { name: 'Snacks', icon: '🍿' }
+    ],
+    'Rent': [
+        { name: '1-bed room flat', icon: '🏠' },
+        { name: '2-bed room flat', icon: '🏡' },
+        { name: '3-bed room flat', icon: '🏘️' },
+        { name: 'PG', icon: '🏨' },
+        { name: 'Shop', icon: '🏪' },
+        { name: 'Office Space', icon: '🏢' }
+    ],
+    'Mobile Recharge': [
+        { name: 'Prepaid', icon: '📱' },
+        { name: 'Postpaid', icon: '📞' },
+        { name: 'Data Pack', icon: '📶' },
+        { name: 'International', icon: '🌍' }
+    ],
+    'Health': [
+        { name: 'Doctor Visit', icon: '👨‍⚕️' },
+        { name: 'Medicines', icon: '💊' },
+        { name: 'Hospital', icon: '🏥' },
+        { name: 'Dental', icon: '🦷' },
+        { name: 'Eye Care', icon: '👁️' },
+        { name: 'Gym', icon: '💪' }
+    ],
+    'Travel': [
+        { name: 'Flight', icon: '✈️' },
+        { name: 'Train', icon: '🚂' },
+        { name: 'Bus', icon: '🚌' },
+        { name: 'Taxi/Uber', icon: '🚕' },
+        { name: 'Auto', icon: '🛺' },
+        { name: 'Hotel', icon: '🏨' }
+    ],
+    'Fuel': [
+        { name: 'Petrol', icon: '⛽' },
+        { name: 'Diesel', icon: '🚛' },
+        { name: 'CNG', icon: '🚗' },
+        { name: 'Electric Charging', icon: '🔌' }
+    ],
+    'Shopping': [
+        { name: 'Clothes', icon: '👕' },
+        { name: 'Electronics', icon: '📱' },
+        { name: 'Home Items', icon: '🏠' },
+        { name: 'Books', icon: '📚' },
+        { name: 'Gifts', icon: '🎁' },
+        { name: 'Online Shopping', icon: '🛒' }
+    ],
+    'Sport': [
+        { name: 'Cricket', icon: '🏏' },
+        { name: 'Football', icon: '⚽' },
+        { name: 'Badminton', icon: '🏸' },
+        { name: 'Tennis', icon: '🎾' },
+        { name: 'Swimming', icon: '🏊' },
+        { name: 'Gym Equipment', icon: '🏋️' }
+    ]
+};
+
+let currentCategory = '';
+
+function hideAllPanels() {
+    document.getElementById('welcome-content').style.display = 'none';
+    document.getElementById('category-records').style.display = 'none';
+    document.getElementById('add-income-form').style.display = 'none';
+    document.getElementById('add-expense-form').style.display = 'none';
+    document.getElementById('subcategories-content').style.display = 'none';
+    document.getElementById('add-subcategory-form').style.display = 'none';
+}
+
+function showCategoryRecords(category) {
+    hideAllPanels();
+    currentCategory = category;
+    document.getElementById('category-records-title').textContent = category + ' Records';
+    
+    // Fetch records for this category (placeholder - you'll need to implement the actual data fetching)
+    fetchCategoryRecords(category);
+    
+    document.getElementById('category-records').style.display = 'block';
+}
+
+function fetchCategoryRecords(category) {
+    fetch(`/get_category_records/${category}`)
+        .then(response => response.json())
+        .then(records => {
+            const recordsList = document.getElementById('records-list');
+            
+            if (records.length === 0) {
+                recordsList.innerHTML = `
+                    <div class="no-records">
+                        <h3>No records found for ${category}</h3>
+                        <p>Start by <a href="/add_record?category=Income">adding a new ${category} record</a>.</p>
+                    </div>
+                `;
+            } else {
+                let recordsHtml = '';
+                records.forEach(record => {
+                    recordsHtml += `
+                        <div class="record-item">
+                            <div class="record-details">
+                                <div class="record-amount">₹${record.Amount}</div>
+                                <div class="record-date">${record.Date}</div>
+                                ${record.Remarks ? `<div class="record-remarks">${record.Remarks}</div>` : ''}
+                            </div>
+                        </div>
+                    `;
+                });
+                recordsList.innerHTML = recordsHtml;
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching records:', error);
+            const recordsList = document.getElementById('records-list');
+            recordsList.innerHTML = `
+                <div class="no-records">
+                    <h3>Error loading records</h3>
+                    <p>Please try again later.</p>
+                </div>
+            `;
+        });
+}
+
+function showAddIncomeForm() {
+    document.getElementById('incomePopup').style.display = 'flex';
+    // Clear form fields
+    document.getElementById('income_category_name').value = '';
+    document.getElementById('income_category_icon').value = '';
+}
+
+function showAddExpenseForm() {
+    document.getElementById('expensePopup').style.display = 'flex';
+    // Clear form fields
+    document.getElementById('expense_category_name').value = '';
+    document.getElementById('expense_subcategory').value = '';
+    document.getElementById('expense_category_icon').value = '';
+}
+
+function closeIncomePopup() {
+    document.getElementById('incomePopup').style.display = 'none';
+    // Clear form fields
+    document.getElementById('income_category_name').value = '';
+    document.getElementById('income_category_icon').value = '';
+}
+
+function closeExpensePopup() {
+    document.getElementById('expensePopup').style.display = 'none';
+    // Clear form fields
+    document.getElementById('expense_category_name').value = '';
+    document.getElementById('expense_subcategory').value = '';
+    document.getElementById('expense_category_icon').value = '';
+}
+
+function showSubcategories(category) {
+    hideAllPanels();
+    currentCategory = category;
+    document.getElementById('subcategory-title').textContent = category + ' Sub-Categories';
+    
+    const grid = document.getElementById('subcategories-grid');
+    grid.innerHTML = '';
+    
+    const subcats = expenseSubcategories[category] || [];
+    
+    // Add all existing subcategories first
+    subcats.forEach(subcat => {
+        const btn = document.createElement('a');
+        btn.href = `/category_records/${subcat.name}`;
+        btn.className = 'subcategory-btn';
+        btn.innerHTML = `
+            <span class="icon">${subcat.icon}</span>
+            ${subcat.name}
+        `;
+        grid.appendChild(btn);
+    });
+    
+    // Add the "Add Sub-Category" button at the end
+    const addBtn = document.createElement('div');
+    addBtn.className = 'subcategory-btn add-subcategory-btn-grid';
+    addBtn.onclick = showAddSubcategoryForm;
+    addBtn.innerHTML = `
+        <span class="icon">➕</span>
+        Add Sub-Category
+    `;
+    grid.appendChild(addBtn);
+    
+    document.getElementById('subcategories-content').style.display = 'block';
+}
+
+function showAddSubcategoryForm() {
+    hideAllPanels();
+    document.getElementById('add-subcategory-title').textContent = `➕ Add Sub-Category to ${currentCategory}`;
+    document.getElementById('parent_category').value = currentCategory;
+    document.getElementById('add-subcategory-form').style.display = 'block';
+}
+
+function goBackToSubcategories() {
+    if (currentCategory) {
+        showSubcategories(currentCategory);
+    } else {
+        hideAllPanels();
+        document.getElementById('welcome-content').style.display = 'block';
+    }
+}
+
+// Close popup when clicking outside of it
+window.onclick = function(event) {
+    const incomePopup = document.getElementById('incomePopup');
+    const expensePopup = document.getElementById('expensePopup');
+    
+    if (event.target === incomePopup) {
+        closeIncomePopup();
+    }
+    if (event.target === expensePopup) {
+        closeExpensePopup();
+    }
+}
+
+function clearSubcategoryForm() {
+    document.getElementById('subcategory_name').value = '';
+    document.getElementById('subcategory_icon').value = '';
+}
+
+// Show welcome content by default
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('welcome-content').style.display = 'block';
+});
+</script>
+{% endblock %}
